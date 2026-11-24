@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Folkshala AI dashboard demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2292%22%20height%3D%2292%22%20fill%3D%22%23FFF8EC%22%20stroke%3D%22%231E1A16%22%20stroke-width%3D%224%22%20stroke-dasharray%3D%228%205%22/%3E%3Crect%20x%3D%2214%22%20y%3D%2214%22%20width%3D%2272%22%20height%3D%2272%22%20rx%3D%228%22%20fill%3D%22%2326338C%22%20stroke%3D%22%231E1A16%22%20stroke-width%3D%224%22/%3E%3Cpath%20d%3D%22M14%2034%20l9%20-9%20l9%209%20l9%20-9%20l9%209%20l9%20-9%20l9%209%20l9%20-9%20l4%204%22%20fill%3D%22none%22%20stroke%3D%22%23E5A11B%22%20stroke-width%3D%224%22/%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2262%22%20r%3D%2214%22%20fill%3D%22%23B83A2B%22%20stroke%3D%22%231E1A16%22%20stroke-width%3D%223%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=Mukta:wght@400;600;700&family=Shrikhand&family=Yatra+One&display=swap" rel="stylesheet">
+<style>/*
+Two registers, one brand.
+Adults (teacher, educator, school, funder): calm product UI, white cards, hairlines, one cutout per page.
+Children (Teach mode on the class screen) + landing hero: the deck's poster world, textured paper, Shrikhand, folk cutouts.
+Colour meanings never change: indigo = AI, sindoor = humans, patta = kit, haldi = money / assumptions, gulabi = decor.
+*/
+:root{color-scheme:light;
+  --neel:#26338C;--sindoor:#B83A2B;--patta:#1D5B30;--haldi:#E5A11B;--ink:#1E1A16;--gulabi:#E98A9A;
+  --paper:#F4EFE6;--card:#FFFFFF;--cream:#FFF8EC;--muted:#6B6157;--line:rgba(30,26,22,.10);--line2:rgba(30,26,22,.16);--fill:#F1ECE3;
+  --t-ai:#E9EBF6;--t-hu:#F8E7E3;--t-kit:#E3EEE6;--t-hal:#FCEFD2;
+  --ui:'Schibsted Grotesk','Mukta',system-ui,-apple-system,sans-serif;--display:'Shrikhand','Schibsted Grotesk',serif;--logo:'Yatra One','Mukta',serif;--hindi:'Mukta','Schibsted Grotesk',sans-serif;
+  --r:18px;--shadow:0 1px 1px rgba(30,26,22,.04),0 12px 32px -16px rgba(30,26,22,.22)}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:90px}
+body{margin:0;color:var(--ink);font:400 15.5px/1.55 var(--ui);background:var(--paper);overflow-x:clip;-webkit-font-smoothing:antialiased}
+/* faint paper grain, no figures */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;background:url(img/kraft.webp) center/cover;mix-blend-mode:multiply}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--neel);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.skip:focus{position:fixed;width:auto;height:auto;clip:auto;left:12px;top:12px;z-index:60;background:var(--ink);color:var(--cream);padding:8px 12px;border-radius:8px}
+[lang=hi],[lang=bho]{font-family:var(--hindi)}
+.frame,.app{position:relative;z-index:1;min-height:100vh}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:10px 24px;flex-wrap:wrap;
+  background:rgba(247,243,236,.82);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:none}
+.logo svg{border-radius:10px}
+.logo .w{line-height:1;display:block;white-space:nowrap}
+.fo{font-family:var(--logo);color:var(--sindoor)}.sh{font-family:var(--display);color:var(--neel)}
+.logo .fo{font-size:24px}.logo .sh{font-size:20px;margin-left:1px}
+.logo .tag{display:block;font-size:9.5px;font-weight:600;letter-spacing:2px;color:var(--muted);margin-top:3px}
+.roles{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;justify-content:center;background:rgba(30,26,22,.06);border-radius:14px;padding:3px}
+.roles::-webkit-scrollbar{display:none}
+.roles a{flex:none;min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border-radius:11px;text-decoration:none;color:var(--ink);font-weight:500;font-size:13.5px;white-space:nowrap}
+.roles a:hover{background:rgba(255,255,255,.6)}
+.roles a[aria-current="page"]{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.06);font-weight:600}
+.status{display:flex;gap:8px;align-items:center;flex:none}
+.online{font-size:12.5px;font-weight:600;color:var(--patta);border:0;border-radius:999px;padding:6px 12px;background:var(--t-kit);min-height:34px}
+.online.off{color:var(--muted);background:var(--fill)}
+@media(max-width:1480px){.roles{order:3;flex:1 1 100%;justify-content:flex-start}.status{margin-left:auto}.top{row-gap:8px;padding:8px 24px}}
+
+/* ---------- chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;letter-spacing:.6px;white-space:nowrap;line-height:1.7;text-transform:uppercase}
+.c-ai{background:var(--t-ai);color:var(--neel)}.c-hu{background:var(--t-hu);color:var(--sindoor)}
+.c-kit{background:var(--t-kit);color:var(--patta)}.c-con,.c-as{background:var(--t-hal);color:#6b4a00}
+.c-sch{background:var(--ink);color:var(--cream)}
+.c-tg{background:transparent;color:var(--ink);border:1.5px dashed var(--muted);padding:1px 8px}
+.c-demo{background:var(--fill);color:var(--muted)}
+.c-mut{background:var(--fill);color:var(--muted)}
+
+/* ---------- page + headings ---------- */
+main{position:relative;z-index:1}
+.page{max-width:1200px;margin:0 auto;padding:28px 24px 0}
+.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding:12px 0 22px}
+.stag{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--cream);border-radius:999px;padding:3px 12px 3px 4px;font-weight:600;letter-spacing:1.6px;font-size:11px;text-transform:uppercase}
+.stag b{background:var(--haldi);color:var(--ink);border-radius:999px;padding:0 8px;letter-spacing:0}
+h1,h2,h3{font-family:var(--ui);margin:0;line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(30px,3.6vw,46px);font-weight:800;margin-top:14px}
+h1 .bar,h2 .bar{color:var(--muted);font-weight:700}
+h2{font-size:20px;font-weight:700}
+h3{font-size:16px;font-weight:700}
+.lede{color:var(--muted);max-width:62ch;margin:12px 0 0;font-size:16.5px}
+.hi{font-size:13.5px;color:var(--muted)}
+.headart{position:relative;width:210px;height:200px;display:grid;place-items:end center}
+.headart .disc{position:absolute;width:170px;height:170px;right:6px;top:6px;border-radius:50%;background:var(--c,var(--haldi))}
+.headart img{position:relative;max-width:100%;max-height:200px;filter:drop-shadow(0 10px 16px rgba(30,26,22,.22))}
+.headart.tilt img{transform:rotate(-6deg)}
+@media(max-width:760px){.head{grid-template-columns:1fr}.headart{display:none}}
+
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:980px){.g4,.g5,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.g2,.g3,.g4,.g5{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px 22px;position:relative}
+.card.flat{box-shadow:none;background:rgba(255,255,255,.6)}
+.card .ct{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.lab,.kl{font-size:12.5px;font-weight:600;color:var(--muted)}
+.lab{text-transform:uppercase;letter-spacing:1.2px;font-size:11px}
+.big{font-family:var(--ui);font-weight:700;font-size:36px;line-height:1.05;letter-spacing:-.03em}
+.kpi .big{margin:6px 0 2px}
+.kpi .row{margin-top:10px}
+.zig{height:1px;background:var(--line);margin:28px 0}
+.stampwrap{height:100%}
+.stamp{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);height:100%;position:relative;overflow:hidden}
+.stamp::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--acc,var(--haldi))}
+.stamp .in{padding:20px 22px 20px 26px;height:100%}
+
+.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 18px;border:1px solid var(--line2);border-radius:12px;background:#fff;font-weight:600;font-size:14.5px;text-decoration:none;color:var(--ink);transition:background .15s,transform .1s}
+.btn:hover{background:#faf7f2}
+.btn:active{transform:scale(.98)}
+.btn.red{background:var(--sindoor);border-color:var(--sindoor);color:#fff}.btn.ind{background:var(--neel);border-color:var(--neel);color:#fff}
+.btn.grn{background:var(--patta);border-color:var(--patta);color:#fff}.btn.ink{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.hal{background:var(--haldi);border-color:var(--haldi);color:var(--ink)}
+.btn.red:hover,.btn.ind:hover,.btn.grn:hover,.btn.ink:hover,.btn.hal:hover{filter:brightness(1.07)}
+.btn.lg{min-height:50px;font-size:16px;padding:10px 24px;border-radius:14px}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn[aria-pressed="true"],.btn[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sp{justify-content:space-between}
+
+.foot{position:relative;z-index:1;margin-top:48px;border-top:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.foot .fl{font-weight:600;letter-spacing:1.4px;color:var(--ink)}
+.foot .fo{font-size:15px;letter-spacing:0}.foot .sh{letter-spacing:0;font-size:13px}
+
+/* ---------- landing hero (poster world) ---------- */
+.hero{position:relative;overflow:hidden;color:var(--cream);background:#1f2a78 url(img/indigo.webp) center/cover}
+.hero::before,.hero::after{content:"";position:absolute;left:0;right:0;height:46px;background:url(img/band.webp) center/auto 100% repeat-x;z-index:1}
+.hero::before{top:0}.hero::after{bottom:0}
+.hero .in{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:80px 24px 84px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;min-height:600px}
+.hero .bigw{line-height:.92;margin:8px 0 0}
+.hero .bigw .fo{display:block;font-size:clamp(84px,10vw,140px);color:var(--haldi);text-shadow:5px 5px 0 var(--ink)}
+.hero .bigw .sh{display:block;font-size:clamp(60px,7.2vw,104px);color:var(--cream);text-shadow:5px 5px 0 var(--ink);margin-top:-4px}
+.hero .eyebrow{margin-bottom:22px;font-size:12px;font-weight:700;letter-spacing:4px;color:var(--haldi)}
+.hero .hindi{font-family:var(--hindi);font-weight:600;font-size:20px;color:var(--haldi);margin:16px 0 2px}
+.hero .tagl{font-family:var(--display);font-size:clamp(20px,2.2vw,27px);line-height:1.3;margin:4px 0 14px}
+.hero p.sub{max-width:50ch;opacity:.9;margin:0 0 24px}
+.hero .btn.ghost{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.5);color:#fff}
+.collage{position:relative;height:460px}
+.collage img{position:absolute;filter:drop-shadow(0 16px 22px rgba(0,0,0,.35))}
+.collage .hanu{left:2%;top:0;width:44%;transform:rotate(-7deg)}
+.collage .anna{right:0;top:-10px;width:40%;transform:rotate(6deg)}
+.collage .maha{right:6%;bottom:-30px;width:46%}
+.collage .flw{left:46%;top:6px;width:11%;transform:rotate(-12deg)}
+.collage .drum{left:0;bottom:-34px;width:44%}
+@media(max-width:900px){.hero .in{grid-template-columns:1fr;min-height:0}.collage{height:380px;max-width:520px}}
+.credit{font-size:11.5px;color:var(--muted);margin-top:10px}
+
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.steps3>div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px 22px;display:flex;gap:14px;align-items:flex-start;font-weight:700;font-size:18px;letter-spacing:-.01em}
+.steps3 small{display:block;font-weight:400;font-size:14px;color:var(--muted);letter-spacing:0;margin-top:4px}
+.sym{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:18px}
+@media(max-width:760px){.steps3{grid-template-columns:1fr}}
+
+/* ---------- stepper ---------- */
+.stepper{display:flex;align-items:center;overflow-x:auto;padding:4px 2px 14px}
+.stepper button{flex:none;display:flex;align-items:center;gap:8px;background:none;border:0;padding:6px 4px;min-height:44px;font-weight:600;font-size:14px;color:var(--muted)}
+.stepper .d{width:26px;height:26px;transform:rotate(45deg);border-radius:7px;border:1.5px solid var(--line2);background:#fff;display:grid;place-items:center;flex:none}
+.stepper .d span{transform:rotate(-45deg);font-weight:700;font-size:12px}
+.stepper .on{color:var(--ink)}.stepper .on .d{background:var(--haldi);border-color:var(--haldi)}
+.stepper .done .d{background:var(--ink);border-color:var(--ink);color:#fff}
+.stepper .lk{opacity:.5}
+.stepper .chain{flex:1 1 24px;min-width:18px;height:1.5px;background:var(--line2);margin:0 4px}
+
+/* ---------- forms ---------- */
+.need{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;transition:background .15s}
+.need.on{background:var(--t-hu);border-color:rgba(184,58,43,.25)}
+.need label{display:flex;align-items:center;gap:12px;font-weight:600;min-height:32px;cursor:pointer}
+.need input[type=checkbox]{width:20px;height:20px;accent-color:var(--sindoor)}
+.cnt{display:flex;align-items:center;gap:2px;background:var(--fill);border-radius:12px;padding:2px}
+.need.on .cnt{background:rgba(255,255,255,.7)}
+.cnt button{width:36px;height:36px;border:0;border-radius:10px;background:transparent;font-weight:700;font-size:17px}
+.cnt button:hover{background:#fff}
+.cnt output{min-width:22px;text-align:center;font-weight:700}
+.field{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px}
+.field input,.field select,.field textarea,select{min-height:44px;border:1px solid var(--line2);border-radius:12px;background:#fff;padding:8px 12px;font-size:15px;font-weight:400}
+textarea{resize:vertical}
+.notice{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:10px 14px;background:var(--t-hu);font-weight:600;font-size:14px;color:#7a2318}
+.tabs{display:inline-flex;gap:2px;flex-wrap:wrap;background:var(--fill);border-radius:12px;padding:3px;margin-bottom:16px}
+.tabs button{min-height:38px;padding:4px 14px;border:0;border-radius:10px;background:transparent;font-weight:600;font-size:14px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+.story{cursor:pointer;text-align:left;width:100%;display:flex;flex-direction:column;gap:8px;font:inherit;color:inherit;transition:transform .15s,box-shadow .15s}
+.story:hover{transform:translateY(-2px)}
+.story[aria-pressed="true"]{box-shadow:0 0 0 2.5px var(--sindoor),var(--shadow)}
+.story[aria-disabled="true"]{opacity:.55}
+.story h3{font-size:17px}
+.rec{position:absolute;top:-10px;right:14px}
+
+.pipe{display:flex;flex-direction:column;gap:8px}
+.pstep{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--fill)}
+.pstep .tk{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:#fff;font-size:13px}
+.pstep.run{background:var(--t-ai)}
+.pstep.run .tk{border:2px solid var(--neel);border-right-color:transparent;animation:spin 1s linear infinite}
+.pstep.ok .tk{background:var(--neel);color:#fff}
+.progress{height:8px;border-radius:99px;background:var(--fill);overflow:hidden;margin:14px 0 4px}
+.progress i{display:block;height:100%;background:var(--neel);border-radius:99px;transition:width .6s}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.diff{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media(max-width:760px){.diff{grid-template-columns:1fr}}
+.beat{border-left:3px solid var(--line2);padding:8px 12px;margin:8px 0;background:#faf8f4;border-radius:0 10px 10px 0;font-size:14.5px}
+.beat.chg{border-left-color:var(--neel);background:var(--t-ai)}
+.beat .bt{font-size:10.5px;font-weight:700;letter-spacing:1.2px;color:var(--muted);margin-bottom:2px}
+.beat [contenteditable="true"]{outline:1.5px dashed var(--sindoor);border-radius:6px;background:#fff;padding:2px 4px}
+.flag{border-radius:14px;padding:12px 14px;background:var(--t-hal);font-size:14.5px}
+.flag.res{background:var(--t-kit)}
+.stampmark{position:absolute;right:-12px;top:-22px;z-index:3;transform:rotate(-10deg);border:3px double var(--sindoor);color:var(--sindoor);font-family:var(--display);font-size:17px;padding:4px 12px;border-radius:10px;background:#fff;text-align:center;line-height:1.15;box-shadow:0 6px 16px rgba(184,58,43,.2)}
+.stampmark small{display:block;font-family:var(--ui);font-weight:600;font-size:10.5px}
+
+/* ---------- Teach mode: the screen children see (poster world) ---------- */
+.stage{position:relative;overflow:hidden;border-radius:24px;color:var(--cream);background:#1f2a78 url(img/indigo.webp) center/cover;padding:58px 26px 30px;box-shadow:0 20px 50px -20px rgba(20,24,70,.6)}
+.stage::before{content:"";position:absolute;left:0;right:0;top:0;height:34px;background:url(img/band.webp) center/auto 100% repeat-x}
+.stage .flw{position:absolute;width:56px;top:40px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
+.stage .flw.l{left:14px;transform:rotate(-14deg)}.stage .flw.r{right:14px;transform:scaleX(-1) rotate(-14deg)}
+.stage .stitle{font-family:var(--display);font-size:clamp(24px,2.6vw,34px);text-shadow:3px 3px 0 var(--ink);text-align:center;margin:0 0 4px}
+.stage .ssub{text-align:center;color:var(--haldi);font-weight:600;letter-spacing:2px;font-size:12px;text-transform:uppercase;margin-bottom:18px}
+.bcard{position:relative;color:var(--ink);background:#f3e7cf url(img/kraft.webp) center/cover;border:3px solid var(--ink);border-radius:20px;padding:26px 28px;min-height:230px;display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:20px;align-items:center;box-shadow:6px 6px 0 var(--ink)}
+@media(max-width:760px){.bcard{grid-template-columns:1fr}}
+.bcard .hn{font-family:var(--hindi);font-weight:700;font-size:clamp(24px,2.8vw,36px);line-height:1.3}
+.bcard .en{margin:10px 0 0;color:#4a4036;font-size:16px}
+.tokdisc{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;margin:auto;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.tokdisc svg{width:110px;height:110px}
+.tokname{text-align:center;font-weight:700;margin-top:10px}
+.wave{display:flex;align-items:center;gap:3px;height:40px}
+.wave i{display:block;width:4px;border-radius:3px;background:var(--haldi);height:8px}
+.wave.on i{animation:wv .9s ease-in-out infinite}
+@keyframes wv{50%{height:34px}}
+.caption{background:rgba(20,18,15,.82);color:#fff;border-radius:12px;padding:10px 14px;min-height:46px;font-size:19px;font-family:var(--hindi)}
+.token{display:flex;align-items:center;gap:12px;background:var(--haldi);color:var(--ink);border:2.5px solid var(--ink);border-radius:16px;padding:10px 14px;font-weight:600;box-shadow:4px 4px 0 var(--ink)}
+.stage .btn{border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);border-radius:12px}
+.stage .btn[disabled]{opacity:.5}
+.votebox{background:var(--cream);color:var(--ink);border:2.5px solid var(--ink);border-radius:16px;padding:14px 16px;margin-top:14px;box-shadow:4px 4px 0 var(--ink)}
+
+/* ---------- tables + bars ---------- */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right}
+tr.sel td{background:#fbf5e6}
+.scroll{overflow-x:auto}
+.hbar{display:grid;grid-template-columns:170px minmax(0,1fr) 64px;gap:12px;align-items:center;margin:8px 0;font-size:14px}
+.hbar b{text-align:right}
+.hbar .tr{height:10px;border-radius:99px;background:var(--fill);overflow:hidden}
+.hbar .tr i{display:block;height:100%;border-radius:99px}
+@media(max-width:520px){.hbar{grid-template-columns:110px minmax(0,1fr) 54px}}
+.fig{position:relative;width:100%}
+.fig svg{display:block;width:100%;height:auto}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(30,26,22,.92);color:#fff;padding:11px 18px;border-radius:14px;z-index:50;font-weight:500;font-size:14.5px;max-width:min(560px,90vw);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.modal{position:fixed;inset:0;background:rgba(30,26,22,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:40;padding:20px}
+.modal .card{max-width:680px;width:100%;max-height:90vh;overflow:auto;border-radius:22px}
+.lockbox{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:48px 20px}
+.lockbox .ic{width:64px;height:64px;border-radius:20px;background:var(--t-hu);display:grid;place-items:center;font-size:28px}
+.ladder{display:grid;gap:8px}
+.ladder>div{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;border-radius:14px;padding:12px;background:var(--fill)}
+.ladder .lv{font-weight:800;font-size:18px;text-align:center}
+.ladder .def{background:var(--t-ai);box-shadow:inset 0 0 0 1.5px var(--neel)}
+.ladder .no{background:repeating-linear-gradient(135deg,#f6f1e8 0 10px,#eee7dc 10px 20px)}
+.stack>div{border-radius:14px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:190px minmax(0,1fr);gap:12px;align-items:center;background:var(--fill)}
+@media(max-width:620px){.stack>div{grid-template-columns:1fr}}
+.pill{display:inline-block;border:1px solid var(--line2);border-radius:8px;padding:1px 8px;margin:2px;font-size:12.5px;font-weight:600;background:#fff}
+.pill.rent{border-style:dashed;background:transparent}
+
+/* ---------- landing extras ---------- */
+.never{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.never li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start}
+.never li b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--t-hu);color:var(--sindoor);font-size:12px}
+.never.ok li b{background:var(--t-kit);color:var(--patta)}
+.seat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.seat .btn{justify-content:flex-start;border-radius:12px}
+.seat .num{font-weight:700;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;width:20px}
+@media(max-width:520px){.seat{grid-template-columns:1fr}}
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.who>div{border-radius:14px;padding:16px 18px;background:var(--fill)}
+.who>div.kid{background:#1f2a78 url(img/indigo.webp) center/cover;color:var(--cream)}
+@media(max-width:620px){.who{grid-template-columns:1fr}}
+
+/* ---------- studio ---------- */
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px;align-items:start}
+@media(max-width:1080px){.studio{grid-template-columns:1fr}}
+.studio.wide{grid-template-columns:1fr}.studio.wide>aside{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+@media(max-width:760px){.studio.wide>aside{grid-template-columns:1fr}}
+.review{grid-template-columns:minmax(0,1fr) 320px}
+@media(max-width:1180px){.review{grid-template-columns:1fr}}
+.mini{display:flex;flex-direction:column;padding:10px 0;border-bottom:1px solid var(--line)}
+.mini:last-child{border-bottom:0}
+.pchip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 4px 3px 12px;background:var(--t-ai);color:var(--neel);font-size:14px}
+.pchip b{color:var(--ink)}
+.pchip button{width:30px;height:30px;border-radius:50%;border:0;background:#fff;font-weight:700}
+.pchip output{min-width:18px;text-align:center;font-weight:700;color:var(--ink)}
+.btn.star{font-size:20px;min-width:46px;padding:4px}
+.btn.star[aria-checked="true"]{background:var(--haldi);border-color:var(--haldi);color:var(--ink)}
+.apprv{box-shadow:0 0 0 2px var(--sindoor),var(--shadow)}
+.recai{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.recai .ic{width:52px;height:52px;border-radius:16px;background:var(--neel);color:#fff;display:grid;place-items:center;font-size:22px;flex:none}
+.freecard{background:linear-gradient(135deg,#fff6e0,#fdebc0)}
+
+/* school / funder / library / ai / business */
+.tier{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;align-items:center;text-align:left;border:1px solid var(--line2);border-radius:14px;background:#fff;padding:12px 14px;min-height:44px}
+.tier .big{font-size:24px}
+.tier[aria-pressed="true"]{background:var(--t-hal);border-color:var(--haldi);box-shadow:inset 0 0 0 1px var(--haldi)}
+.drow{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.pin{width:11px;height:11px;transform:rotate(45deg);border-radius:3px;background:var(--line2)}
+.pin.on{background:var(--patta)}
+.recflow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.recflow .rs{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:14px;border-radius:14px;background:var(--fill);font-size:14px}
+.recflow .rs.now{background:#fff;box-shadow:0 0 0 2px var(--sindoor)}
+.recflow .d{width:30px;height:30px;transform:rotate(45deg);border-radius:8px;display:grid;place-items:center}
+.recflow .d span{transform:rotate(-45deg);font-weight:700}
+@media(max-width:900px){.recflow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.heat{min-width:640px}
+.heat td{font-weight:600;border:2px solid #fff;border-radius:6px}
+.heat td.off{background:repeating-linear-gradient(135deg,#f2ede4 0 6px,#e9e3d8 6px 12px);color:var(--muted)}
+.heat .nl{font-size:9.5px;letter-spacing:1px;color:var(--sindoor);font-weight:700}
+.heat tr.ratio td,.heat tr.ratio th{border-top:1px solid var(--line2);background:#fff;color:var(--ink)}
+.heat th[scope=row]{font-size:13px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--ink)}
+.gw{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.sw{display:flex;align-items:center;gap:8px;font-weight:600;min-height:44px;cursor:pointer;font-size:14px}
+.sw input{width:22px;height:22px;accent-color:var(--neel)}
+.legend{gap:18px;font-size:13.5px;font-weight:600;margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.legend i.hatch{background:repeating-linear-gradient(45deg,#fff 0 2px,var(--ink) 2px 4px)}
+.flow{display:grid;grid-template-columns:minmax(0,1.3fr) 24px minmax(0,.8fr) 24px minmax(0,.9fr);gap:8px;align-items:center}
+.flow .src{display:grid;gap:8px}
+.fbox{border-radius:12px;padding:9px 12px;background:var(--fill);display:flex;flex-direction:column;gap:2px;font-size:13.5px}
+.fbox.mid{align-items:center;text-align:center;background:#fff;border:1px solid var(--line2)}
+.fbox.free{background:var(--sindoor);color:#fff}
+.flow .arr{font-weight:700;font-size:20px;text-align:center;color:var(--muted)}
+@media(max-width:620px){.flow{grid-template-columns:1fr}.flow .arr{transform:rotate(90deg)}}
+.src-line{margin-top:18px;font-size:13.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body><a class="sr skip" href="#" data-act="skip">Skip to content</a><div id="root"></div>
+<script>(function(){
+// ---------- original folk cast + motifs (simple flat SVG, ink outlines, painted eyes) ----------
+const C = { neel: '#26338C', sindoor: '#B83A2B', patta: '#1D5B30', haldi: '#E5A11B', ink: '#1E1A16', paper: '#F6ECD6', card: '#FFF8EC', muted: '#5A4E42', gulabi: '#E98A9A', cream: '#FFF8EC', skin: '#B9714A', skin2: '#9E5C3A' };
+const S = (w, h, body, label) => `<svg viewBox="0 0 ${w} ${h}" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'} xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+const eye = (x, y, r = 6, ring = C.sindoor) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${C.ink}" stroke-width="2"/><circle cx="${x}" cy="${y}" r="${r * .55}" fill="${ring}"/><circle cx="${x + r * .1}" cy="${y}" r="${r * .3}" fill="${C.ink}"/>`;
+
+// kit token icons (generic NFC tokens play characters)
+const TOKENS = {
+  monkey: { name: 'Monkey', hi: 'बंदर', col: C.haldi, svg: `<circle cx="20" cy="20" r="14" fill="#a8693c" stroke="${C.ink}" stroke-width="2.5"/><circle cx="7" cy="18" r="5" fill="#a8693c" stroke="${C.ink}" stroke-width="2"/><circle cx="33" cy="18" r="5" fill="#a8693c" stroke="${C.ink}" stroke-width="2"/><ellipse cx="20" cy="24" rx="8" ry="6" fill="#e8c49a"/><circle cx="15" cy="17" r="2" fill="${C.ink}"/><circle cx="25" cy="17" r="2" fill="${C.ink}"/>` },
+  croc: { name: 'Crocodile', hi: 'मगरमच्छ', col: C.patta, svg: `<path d="M3 24 Q10 12 30 14 L38 18 L30 22 Q20 30 3 24 Z" fill="#4b8a3a" stroke="${C.ink}" stroke-width="2.5"/><circle cx="24" cy="15" r="2" fill="${C.ink}"/><path d="M26 20 l2 3 l2 -3 l2 3" fill="none" stroke="#fff" stroke-width="1.5"/>` },
+  tree: { name: 'Jamun tree', hi: 'जामुन का पेड़', col: C.patta, svg: `<rect x="17" y="22" width="6" height="15" fill="#7a4a2a" stroke="${C.ink}" stroke-width="2"/><circle cx="20" cy="16" r="13" fill="#3f7d3a" stroke="${C.ink}" stroke-width="2.5"/><circle cx="14" cy="14" r="2.5" fill="#5b2a7a"/><circle cx="24" cy="11" r="2.5" fill="#5b2a7a"/><circle cx="23" cy="20" r="2.5" fill="#5b2a7a"/>` },
+  river: { name: 'River', hi: 'नदी', col: C.neel, svg: `<path d="M3 14 q6 -6 12 0 t12 0 t12 0 M3 22 q6 -6 12 0 t12 0 t12 0 M3 30 q6 -6 12 0 t12 0 t12 0" fill="none" stroke="#3b6fd1" stroke-width="3.5" stroke-linecap="round"/>` },
+  wife: { name: "Crocodile's wife", hi: 'मगरमच्छ की पत्नी', col: C.gulabi, svg: `<path d="M3 24 Q10 12 30 14 L38 18 L30 22 Q20 30 3 24 Z" fill="#6aa857" stroke="${C.ink}" stroke-width="2.5"/><circle cx="24" cy="15" r="2" fill="${C.ink}"/><circle cx="16" cy="12" r="3" fill="${C.gulabi}" stroke="${C.ink}" stroke-width="1.5"/>` },
+  heart: { name: 'Heart (story object)', hi: 'दिल', col: C.sindoor, svg: `<path d="M20 34 C 4 22, 6 8, 15 9 C 19 9, 20 13, 20 13 C 20 13, 21 9, 25 9 C 34 8, 36 22, 20 34 Z" fill="${C.sindoor}" stroke="${C.ink}" stroke-width="2.5"/>` },
+};
+const tokenIcon = (k, size = 40) => `<svg viewBox="0 0 40 40" width="${size}" height="${size}" aria-hidden="true">${TOKENS[k].svg}</svg>`;
+
+// stamp-badge logo (app icon / favicon)
+function stampLogo(size = 54) {
+  const n = 14, pts = [];
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Folkshala stamp logo">
+    <rect x="4" y="4" width="92" height="92" fill="${C.card}" stroke="${C.ink}" stroke-width="3" stroke-dasharray="6 4"/>
+    <rect x="12" y="12" width="76" height="76" rx="6" fill="${C.neel}" stroke="${C.ink}" stroke-width="3"/>
+    <path d="M12 30 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l4 4" fill="none" stroke="${C.haldi}" stroke-width="3"/>
+    <text x="50" y="66" text-anchor="middle" font-family="Yatra One" font-size="30" fill="${C.haldi}">फोक</text>
+    <text x="50" y="82" text-anchor="middle" font-family="Shrikhand" font-size="13" fill="${C.card}">shala</text></svg>`;
+}
+
+
+// ---------- demo data (all illustrative) ----------
+const SCHOOL = '[Demo school name]';
+const NEEDS = [
+  { k: 'vision', en: 'Low vision', hi: 'कम दृष्टि' },
+  { k: 'hearing', en: 'Hard of hearing', hi: 'कम सुनना' },
+  { k: 'autism', en: 'Autism', hi: 'ऑटिज़्म' },
+  { k: 'attention', en: 'Attention (ADHD)', hi: 'ध्यान' },
+  { k: 'reading', en: 'Reading difficulty', hi: 'पढ़ने में कठिनाई' },
+  { k: 'speech', en: 'Speech / language', hi: 'बोलना / भाषा' },
+  { k: 'motor', en: 'Physical / motor', hi: 'शारीरिक' },
+  { k: 'lang', en: 'Home-language mix', hi: 'घर की भाषाएँ' },
+];
+const STORIES = [
+  { id: 'monkey', title: 'The Monkey and the Crocodile', hi: 'बंदर और मगरमच्छ', src: 'Panchatantra', region: 'Pan-India', langs: ['Hindi', 'Bhojpuri', 'English'], theme: 'Friendship', moral: 'Quick thinking keeps you safe; choose friends with care.', mins: 8, consent: true, credit: 'Dadi [name], [village]', rec: true,
+    beats: [
+      { p: 'Beginning', t: 'A monkey lives in a jamun tree by the river and shares sweet jamuns with a crocodile.' },
+      { p: 'Beginning', t: 'They become friends. The crocodile takes jamuns home to his wife.' },
+      { p: 'Middle', t: "The crocodile's wife says: if the fruit is this sweet, the monkey's heart must be sweeter. Bring me his heart." },
+      { p: 'Middle', t: 'The crocodile invites the monkey home and carries him across the river on his back.' },
+      { p: 'Middle', t: 'In the middle of the river the crocodile tells the truth: his wife wants the monkey\'s heart.' },
+      { p: 'End', t: 'The monkey says: my heart is up in the jamun tree. Take me back and I will fetch it.' },
+      { p: 'End', t: 'At the bank the monkey jumps up the tree to safety. Their friendship ends.' },
+    ] },
+  { id: 'crow', title: 'The Thirsty Crow', hi: 'प्यासा कौआ', src: 'Folk fable', region: 'North India', langs: ['Hindi', 'Bhojpuri', 'Marathi'], theme: 'Problem solving', moral: 'Keep trying; small steps solve big problems.', mins: 5, consent: true, credit: 'Dadi [name], [village]', rec: true, beats: [] },
+  { id: 'hare', title: 'The Clever Hare and the Lion', hi: 'चतुर खरगोश और शेर', src: 'Panchatantra', region: 'Pan-India', langs: ['Hindi', 'Odia', 'Bangla'], theme: 'Courage', moral: 'Wit can beat strength.', mins: 7, consent: true, credit: 'Dadi [name], [village]', rec: false, beats: [] },
+  { id: 'tenali', title: 'Tenali Raman and the Thieves', hi: 'तेनाली राम और चोर', src: 'Regional folk tale', region: 'South India', langs: ['Telugu', 'Kannada', 'Hindi'], theme: 'Problem solving', moral: 'A calm mind finds a clever way.', mins: 9, consent: true, credit: 'Dadi [name], [village]', rec: true, beats: [] },
+  { id: 'bonbibi', title: 'Bonbibi of the Forest', hi: 'बनबीबी', src: 'Sundarbans oral tradition', region: 'East India', langs: ['Bangla', 'Hindi'], theme: 'Nature', moral: 'Share the forest with care.', mins: 10, consent: false, credit: 'Pending cultural review', rec: true, beats: [] },
+  { id: 'weaver', title: 'The Weaver Bird\'s Nest', hi: 'बया का घोंसला', src: 'Rajasthani folk song-story', region: 'West India', langs: ['Marwari', 'Hindi'], theme: 'Patience', moral: 'Good work takes patient hands.', mins: 6, consent: false, credit: 'Consent pending', rec: true, beats: [] },
+];
+// adapted lesson for the demo story (Class 2 reading level), roles and accessibility
+const ADAPT = [
+  { p: 'Beginning', t: 'Bandar lives in a big jamun tree next to the river. Every day he shares sweet jamuns with his friend Magar the crocodile.', hi: 'नदी किनारे जामुन के पेड़ पर एक बंदर रहता था। वह रोज़ अपने दोस्त मगरमच्छ को मीठे जामुन देता था।', chg: true, tok: 'tree' },
+  { p: 'Beginning', t: 'Magar takes some jamuns home for his wife.', hi: 'मगरमच्छ कुछ जामुन अपनी पत्नी के लिए घर ले जाता था।', chg: false, tok: 'croc' },
+  { p: 'Middle', t: 'His wife says: "The fruit is so sweet. I want to meet this monkey!"', hi: 'पत्नी बोली: "फल इतने मीठे हैं। मुझे उस बंदर से मिलना है!"', chg: true, flag: 'violence', tok: 'wife' },
+  { p: 'Middle', t: 'Magar invites Bandar home. Bandar sits on Magar\'s back to cross the river.', hi: 'मगरमच्छ बंदर को घर बुलाता है। बंदर उसकी पीठ पर बैठकर नदी पार करता है।', chg: false, tok: 'river', choice: true },
+  { p: 'Middle', t: 'In the middle of the river, Magar says his wife wants Bandar\'s heart. Bandar feels scared, then thinks fast.', hi: 'नदी के बीच मगरमच्छ बताता है कि पत्नी बंदर का दिल चाहती है। बंदर डरता है, फिर जल्दी सोचता है।', chg: true, loud: true, tok: 'heart' },
+  { p: 'End', t: 'Bandar says: "My heart is up in the jamun tree! Let us go back and get it."', hi: 'बंदर बोला: "मेरा दिल तो जामुन के पेड़ पर है! चलो वापस चलकर ले आते हैं।"', chg: false, tok: 'monkey' },
+  { p: 'End', t: 'At the bank, Bandar climbs up the tree, safe. Magar says sorry, and they say goodbye.', hi: 'किनारे पर बंदर पेड़ पर चढ़ गया, सुरक्षित। मगरमच्छ ने माफ़ी माँगी, और दोनों ने विदा ली।', chg: true, flag: 'fidelity', tok: 'tree' },
+];
+const ROLES = [
+  { g: 'Group A · 8 children', r: 'Bandar the monkey: say Bandar\'s lines, hold the monkey token', n: 'includes 1 child with low vision: tactile token' },
+  { g: 'Group B · 8 children', r: 'Magar the crocodile: move the crocodile token across the river mat', n: '' },
+  { g: 'Group C · 6 children', r: 'Magar\'s wife: one line, gulabi token', n: '' },
+  { g: 'Group D · 8 children', r: 'The river: make water sounds, wave blue cloth strips', n: 'includes 2 autistic children: predictable, repeated role' },
+  { g: 'Group E · 8 children', r: 'The jamun tree: hold up the tree card, drop paper jamuns', n: 'includes 1 child who is hard of hearing: picture cue cards' },
+];
+const BHOJ = [['पेड़', 'गाछ', 'tree'], ['नदी', 'नदिया', 'river'], ['दोस्त', 'संघतिया', 'friend'], ['घर', 'घरवा', 'home'], ['मीठा', 'मीठ', 'sweet'], ['डर', 'डेर', 'fear']];
+const KIT = [['T01–T04', 'monkey', 'Bandar the monkey'], ['T05–T08', 'croc', 'Magar the crocodile'], ['T09–T10', 'wife', "Magar's wife"], ['T11–T16', 'river', 'River mat sections'], ['T17–T20', 'tree', 'Jamun tree + fruit'], ['T21–T24', 'heart', 'Story object: the heart']];
+
+const QUEUE = [
+  { id: 'D-2041', cls: 'Class 2-B', sch: 'School A', needs: ['vision', 'autism', 'hearing', 'lang'], flags: 2, wait: '12 min', story: 'The Monkey and the Crocodile' },
+  { id: 'D-2039', cls: 'Class 3-A', sch: 'School A', needs: ['reading', 'lang'], flags: 0, wait: '25 min', story: 'The Thirsty Crow' },
+  { id: 'D-2036', cls: 'Class 1-C', sch: 'School A', needs: ['speech', 'attention'], flags: 1, wait: '41 min', story: 'The Clever Hare and the Lion' },
+  { id: 'D-2033', cls: 'Class 2-A', sch: 'School B', needs: ['motor', 'vision'], flags: 1, wait: '1 h 5 min', story: 'The Monkey and the Crocodile' },
+  { id: 'D-2030', cls: 'Class 4-B', sch: 'School B', needs: ['autism', 'reading', 'lang'], flags: 3, wait: '1 h 40 min', story: 'Tenali Raman and the Thieves' },
+  { id: 'D-2027', cls: 'Class 3-C', sch: 'School B', needs: ['hearing'], flags: 0, wait: '2 h 10 min', story: 'The Thirsty Crow' },
+];
+const AUDIT0 = [
+  { id: 'D-2025', cls: 'Class 3-A · School A', ai: 'engine v0.9 · vendor A', who: 'Teacher', dec: 'Approved', ed: '2 lines', ts: 'Mon 10:42' },
+  { id: 'D-2024', cls: 'Class 1-C · School A', ai: 'engine v0.9 · vendor A', who: 'Special educator', dec: 'Sent back', ed: 'note added', ts: 'Mon 10:15' },
+  { id: 'D-2022', cls: 'Class 4-B · School B', ai: 'engine v0.9 · vendor B', who: 'Special educator', dec: 'Approved', ed: '5 lines', ts: 'Fri 14:03' },
+  { id: 'D-2019', cls: 'Class 2-A · School B', ai: 'engine v0.9 · local', who: 'Teacher', dec: 'Rejected', ed: '—', ts: 'Fri 11:20' },
+];
+const LANGS = ['Hindi', 'Bhojpuri', 'Marathi', 'Bangla', 'Odia', 'Tamil'];
+// quality scores (1–5) need × language, scored by special educators (DEMO DATA)
+const EVAL = [
+  [4.6, 4.2, 4.1, 3.9, 3.6, 3.0], [4.4, 4.0, 3.9, 3.8, 3.4, 2.9], [4.5, 4.1, 4.0, 3.7, 3.5, 3.1], [4.3, 3.9, 3.8, 3.8, 3.3, 2.8],
+  [4.2, 3.7, 3.9, 3.6, 3.2, 2.7], [4.1, 3.6, 3.7, 3.5, 3.1, 2.9], [4.4, 4.0, 4.0, 3.9, 3.4, 3.0], [4.5, 4.3, 4.0, 3.8, 3.5, 3.0],
+];
+const REV = { years: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'], csr: [0.25, 1.0, 4.0, 8.0, 14.0], schools: [0.17, 0.8, 2.3, 4.6, 8.0], platform: [0, 0, 0, 0.4, 1.0] };
+
+// ---------- core: state, helpers, chrome, router ----------
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const chip = {
+  ai: (t = '▲ AI') => `<span class="chip c-ai">${t}</span>`,
+  hu: (t = '● TEACHER') => `<span class="chip c-hu">${t}</span>`,
+  kit: (t = '◆ KIT') => `<span class="chip c-kit">${t}</span>`,
+  con: (t = '◆ CONTENT') => `<span class="chip c-con">${t}</span>`,
+  sch: (t = '■ SCHOOL') => `<span class="chip c-sch">${t}</span>`,
+  as: () => `<span class="chip c-as" title="Estimate, price or projection">ASSUMPTION</span>`,
+  tg: () => `<span class="chip c-tg" title="Planned metric, not a result">TARGET</span>`,
+  demo: () => '',
+  demoBadge: (t = 'DEMO DATA') => `<span class="chip c-demo" title="Illustrative mock data">${t}</span>`,
+};
+const needName = k => NEEDS.find(n => n.k === k).en;
+
+const ST = {
+  route: 'home',
+  online: true,
+  // lesson studio
+  step: 1, mode: 'tick', size: 38, devices: 'tablet', counts: { vision: 1, hearing: 1, autism: 2, attention: 0, reading: 0, speech: 0, motor: 0, lang: 1 },
+  checked: { vision: true, hearing: true, autism: true, lang: true }, homeLangs: 'Hindi + Bhojpuri',
+  sentence: '', parsed: null, listening: false,
+  filt: { region: 'All', lang: 'All', theme: 'All' }, story: null,
+  drafting: false, draftStep: 0, drafted: false,
+  tab: 'Story', flags: { violence: null, fidelity: null }, editing: false, edits: 0, approved: null, rejected: false,
+  beat: 0, playing: false, capIdx: 0, vote: null, placed: {}, taught: false, report: null, rating: 0, part: '',
+  free: 2,
+  lessons: [{ t: 'The Thirsty Crow', s: 'Approved · cached offline', d: 'Mon' }, { t: 'The Clever Hare and the Lion', s: 'Draft · waiting for you', d: 'Fri' }],
+  // educator
+  q: 'D-2041', qnote: '', qsent: {},
+  // gov
+  vendor: { a: true, b: false, local: true }, audit: AUDIT0.slice(),
+  // library
+  libSel: 'monkey', recStep: 0, libPlay: false, libCap: 0,
+  tier: 'mid',
+};
+const ROUTES = [
+  ['home', 'Home', 'HOME', '00'], ['teacher', 'Teacher', 'LESSON STUDIO', '01'], ['educator', 'Special educator', 'REVIEW QUEUE', '02'],
+  ['school', 'School', 'SCHOOL DASHBOARD', '03'], ['funder', 'Funder', 'IMPACT', '04'], ['library', 'Story library', "DADI'S LIBRARY", '05'],
+  ['ai', 'AI & governance', 'AI CORE + GOVERNANCE', '06'], ['business', 'Business', 'BUSINESS MODEL', '07'],
+];
+const VIEWS = {};
+let timers = [];
+const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+function toast(msg) { document.querySelectorAll('.toast').forEach(x => x.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+function modal(html) { const m = document.createElement('div'); m.className = 'modal'; m.innerHTML = `<div class="card" role="dialog" aria-modal="true">${html}<div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ink" data-close>Close</button></div></div>`; document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); }); m.querySelector('[data-close]').focus(); }
+
+// title: second line on an ink bar
+const head = (num, tag, l1, l2, lede = '', artHtml = '') => `<div class="head"><div>
+  <div class="row" style="gap:8px"><span class="stag"><b>${num}</b>${tag}</span>${chip.demoBadge('Illustrative data')}</div>
+  <h1>${l1}<br><span class="bar">${l2}</span></h1>${lede ? `<p class="lede">${lede}</p>` : ''}</div>${artHtml}</div>`;
+const art = (k, c = 'var(--haldi)', tilt = false) => `<div class="headart ${tilt ? 'tilt' : ''}" style="--c:${c}" aria-hidden="true"><span class="disc"></span><img src="img/${k}.webp" alt=""></div>`;
+const stampCard = (big, label, extra = '', col = 'var(--ink)') => `<div class="stampwrap"><div class="stamp" style="--acc:${col === 'var(--ink)' ? 'var(--haldi)' : col}"><div class="in"><div class="big" style="color:${col}">${big}</div><div style="font-weight:600;margin-top:8px">${label}</div>${extra ? `<div class="row" style="margin-top:10px">${extra}</div>` : ''}</div></div></div>`;
+const kpi = (big, label, extra = '', col = 'var(--ink)') => `<div class="card kpi"><div class="kl">${label}</div><div class="big" style="color:${col}">${big}</div>${extra.trim() ? `<div class="row">${extra}</div>` : ''}</div>`;
+const hbar = (label, v, max, col, txt) => `<div class="hbar"><span>${label}</span><span class="tr" role="img" aria-label="${label}: ${txt}"><i style="width:${Math.max(2, v / max * 100)}%;background:${col}"></i></span><b style="text-align:right">${txt}</b></div>`;
+
+function topbar() {
+  return `<header class="top">
+    <a class="logo" href="#home" aria-label="Folkshala home">${stampLogo(46)}<span class="w"><span class="fo">फोक</span><span class="sh">shala</span><span class="tag">EVERY CHILD · ONE STORY</span></span></a>
+    <nav class="roles" aria-label="Choose a role">${ROUTES.map(([k, n]) => `<a href="#${k}" ${ST.route === k ? 'aria-current="page"' : ''}>${n}</a>`).join('')}</nav>
+    <div class="status"><button class="online ${ST.online ? '' : 'off'}" data-act="online" aria-live="polite" title="Toggle to preview offline mode">${ST.online ? '● Offline-ready · 24 lessons cached' : '○ Offline · teaching from cache'}</button>${chip.demoBadge()}</div>
+  </header>`;
+}
+function footer() {
+  const r = ROUTES.find(x => x[0] === ST.route);
+  return `<footer class="foot"><span class="fl"><span class="fo">फोक</span><span class="sh">shala</span> · ${r[2]} · ${r[3]}</span><span>Concept demo for DES530, IIIT Delhi. All data is illustrative.</span></footer>`;
+}
+function render() {
+  const v = VIEWS[ST.route] || VIEWS.home;
+  const scrollY = window.scrollY, a = document.activeElement;
+  let sel = null;
+  if (a && a !== document.body) {
+    if (a.id) sel = '#' + CSS.escape(a.id);
+    else { const ks = ['act', 'ch', 'k', 'n', 'd', 'v', 't', 'm', 'f', 'id', 'r']; const parts = ks.filter(k => a.dataset && a.dataset[k] != null).map(k => `[data-${k}="${CSS.escape(a.dataset[k])}"]`); if (parts.length) sel = a.tagName.toLowerCase() + parts.join(''); else if (a.getAttribute('href')) sel = `a[href="${a.getAttribute('href')}"]`; }
+  }
+  document.getElementById('root').innerHTML = `<div class="frame"><div class="app">${topbar()}<main id="main">${v()}</main>${footer()}</div></div>`;
+  window.scrollTo(0, scrollY);
+  if (sel) { const n = document.querySelector(sel); if (n) try { n.focus({ preventScroll: true }); } catch (e) { } }
+}
+function go() {
+  const h = (location.hash || '#home').slice(1);
+  const k = ROUTES.some(r => r[0] === h) ? h : 'home';
+  const changed = k !== ST.route;
+  ST.route = k; render(); if (changed) window.scrollTo(0, 0);
+}
+const ACTIONS = {};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = ACTIONS[el.dataset.act]; if (fn) { e.preventDefault(); fn(el, e); }
+});
+document.addEventListener('input', e => { const el = e.target.closest('[data-in]'); if (el && ACTIONS[el.dataset.in]) ACTIONS[el.dataset.in](el, e); });
+document.addEventListener('change', e => { const el = e.target.closest('[data-ch]'); if (el && ACTIONS[el.dataset.ch]) ACTIONS[el.dataset.ch](el, e); });
+ACTIONS.online = () => { ST.online = !ST.online; render(); toast(ST.online ? 'Back online · drafts sync to the engine' : 'Offline · approved lessons still play from the cache'); };
+ACTIONS.nav = el => { location.hash = el.dataset.to; };
+window.addEventListener('hashchange', go);
+
+ACTIONS.skip = () => { const m = document.getElementById('main'); m.tabIndex = -1; m.focus(); };
+
+// ---------- 4.0 landing ----------
+VIEWS.home = () => `
+<section class="hero" aria-labelledby="h-home">
+  <div class="in">
+    <div>
+      <div class="eyebrow">DES530 · THE BUSINESS OF AI</div>
+      <h1 class="bigw" id="h-home" aria-label="Folkshala"><span class="fo">फोक</span><span class="sh">shala</span></h1>
+      <p class="hindi" lang="hi">हर बच्चा, एक ही कहानी</p>
+      <p class="tagl">AI prepares. Teachers approve.<br>Children touch the story.</p>
+      <p class="sub">A lesson studio for Class 1–5 teachers in Hindi-medium schools. One folk story, adapted for every child in the room, played with a touchable story kit.</p>
+      <div class="row"><a class="btn hal lg" href="#teacher">Open Lesson Studio →</a><a class="btn lg ghost" href="#ai">How the AI is governed</a></div>
+    </div>
+    <div class="collage" aria-hidden="true">
+      <img class="hanu" src="img/hanuman.webp" alt="">
+      <img class="anna" src="img/anna.webp" alt="">
+      <img class="flw" src="img/flowers.webp" alt="">
+      <img class="drum" src="img/drum.webp" alt="">
+      <img class="maha" src="img/mahabali.webp" alt="">
+    </div>
+  </div>
+</section>
+<div class="page" style="padding-top:36px">
+  <div class="steps3" role="list" aria-label="How a lesson is made">
+    <div role="listitem"><span class="sym" style="background:var(--neel)">▲</span><div>AI prepares<small>Drafts the lesson from a class description and a consented folk story.</small></div></div>
+    <div role="listitem"><span class="sym" style="background:var(--sindoor)">●</span><div>Teacher approves<small>Reviews every line, fixes it, stamps it. Nothing skips this step.</small></div></div>
+    <div role="listitem"><span class="sym" style="background:var(--patta)">◆</span><div>Kit delivers<small>Children play the story with 24 touchable tokens, narration and captions.</small></div></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    ${stampCard('~2 min', 'From class description to a lesson draft ready for review', chip.ai() + chip.tg(), 'var(--neel)')}
+    ${stampCard('1 × 8 × 10+', 'One story × 8 need types × 10+ languages = thousands of versions', chip.con() + chip.as())}
+    ${stampCard('0', 'Lessons that reach children without a human approving them', chip.hu('● Human gate'), 'var(--sindoor)')}
+  </div>
+
+  <div class="card" style="margin-top:28px"><div class="ct"><h2>Who uses Folkshala?</h2></div>
+    <div class="who">
+      <div><div class="lab">Adults · the dashboards</div><p style="margin:6px 0 0">Teachers, special educators, school heads and funders. They describe classes, review drafts, approve lessons and read reports. Everything on this site except Teach mode is for them.</p></div>
+      <div class="kid"><div class="lab" style="color:var(--haldi)">Children · one screen only</div><p style="margin:6px 0 0">Children see Teach mode on the class tablet or projector, played by the teacher. No logins, no chat, no screens of their own, and nothing about them is stored.</p></div>
+    </div></div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><div class="ct"><h2>AI never…</h2>${chip.hu('● Humans decide')}</div>
+      <ul class="never">
+        <li><b>✕</b> faces children. It works for the teacher, never on a child's screen.</li>
+        <li><b>✕</b> labels children. Needs are counted at class level, not diagnosed.</li>
+        <li><b>✕</b> rewrites folk stories freely. Changes are flagged and shown side by side.</li>
+        <li><b>✕</b> stores child names. There is no field for them anywhere.</li>
+      </ul></div>
+    <div class="card"><div class="ct"><h2>Pick a seat</h2></div>
+      <div class="seat">${ROUTES.slice(1).map(([k, n, t, num]) => `<a href="#${k}" class="btn"><span class="num">${num}</span>${n}</a>`).join('')}</div></div>
+  </div>
+  <div class="card flat" style="margin-top:16px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+    <p style="margin:0;flex:1 1 320px"><b>Demo scenario.</b> ${SCHOOL}, a Hindi-medium pilot school in Delhi NCR. Class 2-B has 38 children: 1 with low vision, 2 autistic, 1 hard of hearing. Home languages are Hindi and Bhojpuri. Today's story is <i>The Monkey and the Crocodile</i> (Panchatantra); the learning goal is sequencing.</p>
+    <a class="btn red lg" href="#teacher">Start as the teacher →</a>
+  </div>
+  <p class="credit">Folk artwork in the hero, page headers and Teach mode comes from the team's reference deck. Artists are credited in the deck appendix [VERIFY]. Keep this demo private until permissions are confirmed.</p>
+</div>`;
+
+// ---------- 4.1 Teacher Lesson Studio ----------
+ST.adapt = ADAPT.map(b => ({ ...b }));
+const STEPS = ['Describe the class', 'Pick a story', 'AI drafts', 'Review + approve', 'Teach'];
+const PIPE = [
+  ['Needs planner', 'Matches the 4 need types ticked to supports: tactile tokens, picture cues, predictable roles, captions.'],
+  ['Story adapter', 'Rewrites the 7 beats at Class 2 reading level and keeps beginning, middle and end.'],
+  ['Role builder', 'Splits 38 children into 5 groups so everyone has a part.'],
+  ['Accessibility pass', 'Adds token prompts, caption text and quiet cues for loud moments.'],
+  ['Language + safety pass', 'Hindi narration, Bhojpuri glossary, and flags any change to the source.'],
+];
+const SOURCE_END = 'At the bank, Bandar climbs up the tree, safe. He tells Magar: "A true friend would never trick me." Their friendship ends.';
+const SOURCE_END_HI = 'किनारे पर बंदर पेड़ पर चढ़ गया, सुरक्षित। उसने कहा: "सच्चा दोस्त कभी धोखा नहीं देता।" उनकी दोस्ती ख़त्म हो गई।';
+const SOURCE_WIFE = 'His wife says: "If the fruit is this sweet, the monkey\'s heart must be sweeter. Bring me his heart!"';
+const SOURCE_WIFE_HI = 'पत्नी बोली: "फल इतने मीठे हैं, तो बंदर का दिल और मीठा होगा। मुझे उसका दिल ला दो!"';
+const NUMW = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, a: 1, an: 1, ek: 1, do: 2, teen: 3, char: 4, 'एक': 1, 'दो': 2, 'तीन': 3 };
+const NEED_RX = { vision: /low vision|can'?t see|cannot see|blind|vision|eyesight|see the board/i, hearing: /hard of hearing|deaf|hearing|can'?t hear/i, autism: /autis/i, attention: /adhd|attention|restless|can'?t sit/i, reading: /dyslex|reading|can'?t read/i, speech: /speech|stammer|stutter|non-?verbal|language delay/i, motor: /wheelchair|motor|cerebral|physical|crutch|walker/i, lang: /bhojpuri|maithili|urdu|bangla|home language|mother tongue|at home/i };
+
+function parseSentence(s) {
+  const out = { needs: {}, size: null, langs: [] };
+  const m = s.match(/(\d+)\s*(kids|children|students|bachche|बच्चे)/i); if (m) out.size = +m[1];
+  ['Hindi', 'Bhojpuri', 'Maithili', 'Urdu', 'Bangla'].forEach(l => { if (new RegExp(l, 'i').test(s)) out.langs.push(l); });
+  s.split(/,|;|\band\b|\.|\bplus\b/i).forEach(cl => {
+    for (const k in NEED_RX) {
+      if (!NEED_RX[k].test(cl)) continue;
+      let n = 1; const d = cl.match(/\b(\d{1,2})\b(?!\s*(kids|children|students))/i);
+      if (d) n = +d[1]; else { const w = cl.toLowerCase().match(/\b(one|two|three|four|five|six|seven|eight|nine|ten|ek|do|teen|char)\b/); if (w) n = NUMW[w[1]]; }
+      if (k === 'lang' && /most|many|all/i.test(cl)) n = 1;
+      out.needs[k] = Math.max(out.needs[k] || 0, n);
+    }
+  });
+  return out;
+}
+
+const stepper = () => `<nav class="stepper" aria-label="Lesson steps">${STEPS.map((s, i) => {
+  const n = i + 1, locked = n === 5 && !ST.approved, cls = ST.step === n ? 'on' : n < ST.step ? 'done' : '';
+  return `${i ? '<span class="chain" aria-hidden="true"></span>' : ''}<button class="${cls} ${locked ? 'lk' : ''}" data-act="goStep" data-n="${n}" ${ST.step === n ? 'aria-current="step"' : ''}><span class="d"><span>${locked ? '🔒' : n}</span></span>${s}</button>`;
+}).join('')}</nav>`;
+
+function step1() {
+  const tickView = `<div class="grid g2" style="gap:10px">${NEEDS.map(n => `<div class="need ${ST.checked[n.k] ? 'on' : ''}">
+      <label><input type="checkbox" data-ch="tick" data-k="${n.k}" ${ST.checked[n.k] ? 'checked' : ''}><span>${n.en}<br><span class="hi" lang="hi">${n.hi}</span></span></label>
+      <div class="cnt" role="group" aria-label="${n.en} count"><button data-act="cnt" data-k="${n.k}" data-d="-1" aria-label="One fewer">−</button><output aria-live="polite">${ST.counts[n.k]}</output><button data-act="cnt" data-k="${n.k}" data-d="1" aria-label="One more">+</button></div></div>`).join('')}</div>`;
+  const sentView = `<div class="field"><label for="sent">Describe your class in one sentence <span class="hi" lang="hi">(हिंदी या English)</span></label>
+      <textarea id="sent" rows="3" data-in="sent" placeholder="38 kids, one can't see the board well, two are autistic, one is hard of hearing, many speak Bhojpuri at home">${esc(ST.sentence)}</textarea></div>
+    <div class="row" style="margin-top:10px"><button class="btn" data-act="mic" aria-pressed="${ST.listening}">${ST.listening ? '● Listening…' : '🎙 Speak instead'}</button><button class="btn ind" data-act="parse">▲ Parse with AI</button><button class="btn" data-act="example">Use example sentence</button></div>
+    ${ST.parsed ? `<div class="card flat" style="margin-top:14px;border-color:var(--neel)"><div class="ct"><span class="chip c-ai">▲ AI parsed · teacher confirms</span><span class="hi">Fix anything that is wrong, then confirm.</span></div>
+      <div class="row">${Object.keys(ST.parsed.needs).length ? Object.entries(ST.parsed.needs).map(([k, v]) => `<span class="pchip"><b>${needName(k)}</b><button data-act="pcnt" data-k="${k}" data-d="-1" aria-label="One fewer ${needName(k)}">−</button><output>${v}</output><button data-act="pcnt" data-k="${k}" data-d="1" aria-label="One more ${needName(k)}">+</button><button data-act="pdel" data-k="${k}" aria-label="Remove ${needName(k)}">✕</button></span>`).join('') : '<span class="hi">No needs found. Try the tick list.</span>'}
+      ${ST.parsed.size ? `<span class="pchip"><b>Class size</b><output>${ST.parsed.size}</output></span>` : ''}${ST.parsed.langs.length ? `<span class="pchip"><b>Languages</b> ${ST.parsed.langs.join(' + ')}</span>` : ''}</div>
+      <div class="row" style="margin-top:12px"><button class="btn red" data-act="confirmParse">● Confirm these chips</button></div></div>` : ''}`;
+  const total = NEEDS.filter(n => ST.checked[n.k]).length;
+  return `<div class="card"><div class="ct"><h2>Who is in the room?</h2><span class="hi" lang="hi">कक्षा के बारे में बताइए</span></div>
+    <div class="notice" role="note" style="margin-bottom:14px"><span aria-hidden="true">■</span><span>Class-level only. No names, no profiles. <span lang="hi">सिर्फ़ कक्षा की जानकारी।</span></span></div>
+    <div class="tabs" role="tablist"><button role="tab" aria-selected="${ST.mode === 'tick'}" data-act="mode" data-m="tick">Tick the needs</button><button role="tab" aria-selected="${ST.mode === 'say'}" data-act="mode" data-m="say">Type or speak a sentence</button></div>
+    ${ST.mode === 'tick' ? tickView : sentView}
+    <div class="grid g3" style="margin-top:16px">
+      <div class="field"><label for="size">Class size</label><input id="size" type="number" min="5" max="80" value="${ST.size}" data-in="size"></div>
+      <div class="field"><label for="dev">Devices in the room</label><select id="dev" data-ch="dev">${[['tablet', '1 tablet + speaker'], ['board', 'Smart board'], ['none', 'No device: printed cards']].map(([v, l]) => `<option value="${v}" ${ST.devices === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="field"><label for="hl">Home languages</label><select id="hl" data-ch="hl">${['Hindi + Bhojpuri', 'Hindi only', 'Hindi + Maithili', 'Hindi + Urdu'].map(v => `<option ${ST.homeLangs === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+    </div>
+    <div class="row sp" style="margin-top:18px"><span><b>${ST.size} children</b> · ${total} need types · ${ST.homeLangs} · ${chip.kit('◆ 24-token kit')}</span><button class="btn ink lg" data-act="goStep" data-n="2">Pick a story →</button></div></div>`;
+}
+
+function step2() {
+  const f = ST.filt, opt = (k, arr) => `<select data-ch="filt" data-k="${k}" aria-label="Filter by ${k}"><option>All</option>${arr.map(v => `<option ${f[k] === v ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
+  const list = STORIES.filter(s => (f.region === 'All' || s.region === f.region) && (f.lang === 'All' || s.langs.includes(f.lang)) && (f.theme === 'All' || s.theme === f.theme));
+  return `<div class="card recai" style="box-shadow:0 0 0 1.5px var(--neel),var(--shadow)">
+      <span class="ic" aria-hidden="true">▲</span>
+      <div style="flex:1 1 320px"><span class="chip c-ai">▲ AI recommends</span><h3 style="margin-top:6px">The Monkey and the Crocodile</h3>
+      <p style="margin:4px 0 0">Why: your goal is <b>sequencing</b>, and this story has a clear beginning, middle and end in 7 beats. It is ready in Hindi and Bhojpuri, its tokens are already in your kit, and 8 minutes fits one period.</p></div>
+      <button class="btn red" data-act="pick" data-id="monkey">● Use this story</button></div>
+    <div class="row" style="margin:20px 0 12px"><b>Filters:</b> ${opt('region', ['Pan-India', 'North India', 'South India', 'East India', 'West India'])} ${opt('lang', ['Hindi', 'Bhojpuri', 'Bangla', 'Marathi', 'Telugu'])} ${opt('theme', ['Friendship', 'Problem solving', 'Courage', 'Nature', 'Patience'])}
+      <label class="field" style="flex-direction:row;align-items:center;margin-left:auto">Learning goal <select data-ch="goal"><option>Sequencing (beginning, middle, end)</option><option>Listening + retelling</option><option>New words</option></select></label></div>
+    <div class="grid g3">${list.map(s => storyCard(s)).join('') || '<p>No stories match. Clear a filter.</p>'}</div>
+    <div class="row sp" style="margin-top:18px"><button class="btn" data-act="goStep" data-n="1">← Back</button><button class="btn ind lg" data-act="draft" ${ST.story ? '' : 'disabled'}>▲ Draft the lesson</button></div>`;
+}
+function storyCard(s, lib) {
+  const full = !!s.beats.length, sel = lib ? ST.libSel === s.id : ST.story === s.id;
+  return `<button class="card story" ${lib ? `data-act="libSel"` : `data-act="pick"`} data-id="${s.id}" aria-pressed="${sel}" ${!s.consent && !lib ? 'aria-disabled="true"' : ''}>
+    ${s.rec && s.consent && !lib ? '<span class="rec chip c-ai">▲ fits your class</span>' : ''}
+    <div class="row sp" style="width:100%"><span class="chip c-con">◆ CONTENT</span><span class="hi">${s.mins} min · ${s.region}</span></div>
+    <h3>${s.title}</h3><span class="hi" lang="hi" style="margin-top:-6px">${s.hi} · ${s.src}</span>
+    <span style="font-size:14px">Moral: ${s.moral}</span>
+    <span class="row" style="gap:4px">${s.langs.map(l => `<span class="pill">${l}</span>`).join('')}</span>
+    <span style="font-size:13px;font-weight:600;color:${s.consent ? 'var(--patta)' : 'var(--sindoor)'}">${s.consent ? `Consent ✓ · Credit: ${s.credit}` : `Consent pending · cannot be used yet`}</span>
+    ${!lib && s.consent && !full ? '<span class="hi">Demo: full draft for Monkey and Crocodile only</span>' : ''}</button>`;
+}
+
+function step3() {
+  const done = ST.drafted, pct = Math.round(ST.draftStep / PIPE.length * 100);
+  return `<div class="card" id="drafting"><div class="ct"><h2>${done ? 'Draft ready for your review' : 'Drafting the lesson…'}</h2>${chip.ai('▲ AI prepares')}</div>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Drafting progress"><i style="width:${pct}%"></i></div>
+      <p class="hi" style="margin:0 0 14px">${done ? '5 of 5 passes complete' : `Pass ${Math.min(ST.draftStep + 1, 5)} of 5`}. The draft stays invisible to children until you approve it.</p>
+      <div class="pipe" aria-live="polite">${PIPE.map(([t, d], i) => `<div class="pstep ${ST.draftStep > i ? 'ok' : ST.draftStep === i && ST.drafting ? 'run' : ''}"><span class="tk">${ST.draftStep > i ? '✓' : i + 1}</span><div><b>${t}</b><div class="hi">${d}</div></div><span class="hi">${ST.draftStep > i ? 'Done' : ST.draftStep === i && ST.drafting ? 'Working' : 'Waiting'}</span></div>`).join('')}</div>
+      ${done ? `<div class="row sp" style="margin-top:18px"><div><div class="kl">Drafted in</div><div class="big" style="color:var(--neel)">1 min 48 s</div><span class="hi">Demo plays faster than real time.</span></div><button class="btn red lg" data-act="goStep" data-n="4">● Review the draft →</button></div>` : ''}</div>`;
+}
+
+function diffView(edit) {
+  const src = STORIES[0].beats;
+  return `<div class="diff"><div><div class="lab" style="margin-bottom:4px">Source beats · Panchatantra</div>${src.map((b, i) => `<div class="beat"><div class="bt">${i + 1} · ${b.p.toUpperCase()}</div>${b.t}</div>`).join('')}</div>
+    <div><div class="lab" style="margin-bottom:4px">Adapted lesson · Class 2 <span class="chip c-ai" style="margin-left:6px">▲ changed lines</span></div>${ST.adapt.map((b, i) => `<div class="beat ${b.chg ? 'chg' : ''}"><div class="bt">${i + 1} · ${b.p.toUpperCase()}${b.chg ? ' · ▲ CHANGED' : ''}${b.flag ? ' · ⚑ FLAG' : ''}</div><div ${edit ? `contenteditable="true" data-beat="${i}" aria-label="Edit beat ${i + 1}"` : ''}>${esc(b.t)}</div><div class="hi" lang="hi">${b.hi}</div></div>`).join('')}</div></div>`;
+}
+function reviewTab() {
+  switch (ST.tab) {
+    case 'Roles': return `<table><thead><tr><th>Group</th><th>Role in the story</th><th>Support built in</th></tr></thead><tbody>${ROLES.map(r => `<tr><td><b>${r.g}</b></td><td>${r.r}</td><td>${r.n || '—'}</td></tr>`).join('')}</tbody></table><p class="hi">Groups are about the whole class. Needs are not tied to any named child.</p>`;
+    case 'Accessibility': return `<div class="grid g2">${[['Low vision', 'Tactile tokens with raised edges; narration describes each token as it is placed.'], ['Autism', 'Predictable repeated role (the river); a quiet cue before the loud reveal in beat 5.'], ['Hard of hearing', 'Captions on every beat; picture cue cards for the tree group.'], ['Home language', 'Bhojpuri words for key nouns spoken after the Hindi line.']].map(([a, b]) => `<div class="card flat"><b>${a}</b><p style="margin:4px 0 0">${b}</p></div>`).join('')}</div>`;
+    case 'Kit': return `<p style="margin-top:0">${chip.kit('◆ 24 generic NFC tokens')} The same tokens play any story; the app tells the class what each token is today.</p><div class="grid g3">${KIT.map(([ids, k, l]) => `<div class="token" style="background:var(--card)">${tokenIcon(k, 44)}<span><b>${ids}</b><br>${l}</span></div>`).join('')}</div>`;
+    case 'Language': return `<p style="margin-top:0">Narration in Hindi. Key words repeated in Bhojpuri so home-language speakers recognise them.</p><table><thead><tr><th>Hindi</th><th>Bhojpuri</th><th>English</th></tr></thead><tbody>${BHOJ.map(([h, b, e]) => `<tr><td lang="hi">${h}</td><td lang="bho">${b}</td><td>${e}</td></tr>`).join('')}</tbody></table><p class="hi">Glossary to be checked by a Bhojpuri-speaking teacher before launch. ${chip.as()}</p>`;
+    default: return diffView(ST.editing);
+  }
+}
+function step4() {
+  const fl = ST.flags, open = (fl.violence ? 0 : 1) + (fl.fidelity ? 0 : 1);
+  if (ST.rejected) return `<div class="card lockbox"><div class="ic" aria-hidden="true">✕</div><h2>Draft rejected</h2><p>Nothing reaches the class. Tell the AI what to fix and it will draft again.</p>
+    <div class="row">${['Too long', 'Wrong reading level', 'Story changed too much', 'Roles do not fit my class'].map(r => `<button class="btn" data-act="redraft" data-r="${r}">${r}</button>`).join('')}</div></div>`;
+  return `<div class="grid review" style="align-items:start">
+    <div class="card ${ST.approved ? 'apprv' : ''}">
+      ${ST.approved ? `<div class="stampmark" role="img" aria-label="Approved by teacher at ${ST.approved.ts}">APPROVED<br>BY TEACHER<small>${ST.approved.ts}</small></div>` : ''}
+      <div class="ct"><h2>The Monkey and the Crocodile</h2><span class="row">${chip.ai('▲ AI DRAFT')}${ST.approved ? chip.hu('● APPROVED') : ''}</span></div>
+      <div class="tabs" role="tablist">${['Story', 'Roles', 'Accessibility', 'Kit', 'Language'].map(t => `<button role="tab" aria-selected="${ST.tab === t}" data-act="tab" data-t="${t}">${t}</button>`).join('')}</div>
+      ${reviewTab()}
+    </div>
+    <aside class="grid" style="gap:14px">
+      <div class="card"><div class="ct"><h3>Risk flags</h3><span class="chip ${open ? 'c-hu' : 'c-kit'}">${open ? `${open} to resolve` : '✓ all resolved'}</span></div>
+        <div class="flag ${fl.violence ? 'res' : ''}"><b>⚑ Violence softened.</b> In the source the wife wants the monkey's heart. The draft says she wants to "meet" him. Keep the softer line?
+          <div class="row" style="margin-top:8px"><button class="btn" data-act="flag" data-f="violence" data-v="keep" aria-pressed="${fl.violence === 'keep'}">Keep softened</button><button class="btn" data-act="flag" data-f="violence" data-v="restore" aria-pressed="${fl.violence === 'restore'}">Restore source</button></div></div>
+        <div class="flag ${fl.fidelity ? 'res' : ''}" style="margin-top:10px"><b>⚑ Fidelity: ending changed.</b> The draft adds an apology. In the source the friendship simply ends.
+          <div class="row" style="margin-top:8px"><button class="btn" data-act="flag" data-f="fidelity" data-v="source" aria-pressed="${fl.fidelity === 'source'}">Use source ending</button><button class="btn" data-act="flag" data-f="fidelity" data-v="keep" aria-pressed="${fl.fidelity === 'keep'}">Keep apology</button></div></div></div>
+      <div class="card"><h3>Your decision</h3><p class="hi" style="margin:4px 0 10px">Teach mode stays locked until you approve.</p>
+        ${ST.approved ? `<p style="margin:0 0 10px"><b>● Approved</b> at ${ST.approved.ts} with ${ST.approved.edits} edit${ST.approved.edits === 1 ? '' : 's'}. Logged as ${ST.approved.id}.</p><button class="btn grn lg" data-act="goStep" data-n="5" style="width:100%">◆ Open Teach mode →</button>` :
+        `<div class="grid" style="gap:8px"><button class="btn red lg" data-act="approve" ${open ? 'disabled' : ''}>● Approve</button>${open ? `<span class="hi">Resolve ${open} flag${open > 1 ? 's' : ''} to approve.</span>` : ''}
+        <button class="btn" data-act="edit">${ST.editing ? '✓ Save edits' : '✎ Edit lines'}</button><button class="btn" data-act="reject">✕ Reject</button></div>`}
+        <p class="hi" style="margin:12px 0 0;font-size:12px">Your edits are logged without any child data and help the AI draft better next time. It learns from teacher edits, never from children.</p></div>
+    </aside></div>`;
+}
+
+function step5() {
+  if (!ST.approved) return `<div class="card lockbox"><div class="ic" aria-hidden="true">🔒</div><h2>Teach mode is locked</h2><p style="margin:0">Nothing reaches children until a teacher approves the lesson.<br><span lang="hi" class="hi">शिक्षक की मंज़ूरी के बिना कुछ भी बच्चों तक नहीं जाता।</span></p><button class="btn red lg" data-act="goStep" data-n="4">● Go to review</button></div>`;
+  if (ST.report) return reportView();
+  const b = ST.adapt[ST.beat], n = ST.adapt.length, tk = TOKENS[b.tok], grp = { monkey: 'Group A', croc: 'Group B', wife: 'Group C', river: 'Group D', tree: 'Group E', heart: 'Group A' }[b.tok];
+  const caps = [b.hi, b.t];
+  return `<div class="row sp" style="margin-bottom:12px"><span class="hi">This is the screen the class sees. You control it.</span><button class="btn" data-act="fs">⛶ Present full screen</button></div>
+  <div class="stage" id="stage">
+    <img class="flw l" src="img/flowers.webp" alt=""><img class="flw r" src="img/flowers.webp" alt="">
+    <p class="stitle">The Monkey and the Crocodile</p>
+    <div class="ssub">Beat ${ST.beat + 1} of ${n} · ${b.p} · ◆ plays offline</div>
+    <div class="bcard"><div><div class="hn" lang="hi">${b.hi}</div><p class="en">${esc(b.t)}</p>${b.loud ? '<p class="chip c-mut" style="margin-top:10px">Quiet cue: tap the drum softly first</p>' : ''}</div>
+      <div><div class="tokdisc" style="background:var(--cream)">${tokenIcon(b.tok, 110)}</div><div class="tokname">${tk.name} · <span lang="hi">${tk.hi}</span></div></div></div>
+    <div class="row" style="margin-top:18px"><button class="btn hal" data-act="play" aria-pressed="${ST.playing}">${ST.playing ? '❚❚ Pause' : '▶ Play narration'}</button>
+      <div class="wave ${ST.playing ? 'on' : ''}" aria-hidden="true">${Array.from({ length: 28 }, (_, i) => `<i style="animation-delay:${(i % 7) * .09}s"></i>`).join('')}</div></div>
+    <div class="caption" aria-live="polite" style="margin-top:12px"><span class="sr">Caption: </span>${ST.playing || ST.capIdx ? caps[ST.capIdx % 2] : 'Captions appear here when narration plays.'}</div>
+    <div class="token" style="margin-top:16px">${tokenIcon(b.tok, 40)}<span style="flex:1">${grp}: place the <b>${tk.name.toLowerCase()}</b> token on the story mat.</span>${ST.placed[ST.beat] ? '<b>✓ Placed</b>' : `<button class="btn" data-act="placed">Simulate token tap</button>`}</div>
+    ${b.choice ? `<div class="votebox"><b>Class vote:</b> Should Bandar go with Magar? Ask for hands, then tap the side with more.
+      <div class="row" style="margin-top:10px"><button class="btn" data-act="vote" data-v="yes" aria-pressed="${ST.vote === 'yes'}">Yes, go</button><button class="btn" data-act="vote" data-v="no" aria-pressed="${ST.vote === 'no'}">No, stay</button>${ST.vote ? `<span>${ST.vote === 'no' ? 'Many of you said stay! Let us see what Bandar does…' : 'Off he goes! Let us see what happens…'} The folk story stays as told.</span>` : ''}</div></div>` : ''}
+    <div class="row sp" style="margin-top:20px"><button class="btn" data-act="beat" data-d="-1" ${ST.beat ? '' : 'disabled'}>← Previous</button>
+      ${ST.beat < n - 1 ? `<button class="btn hal lg" data-act="beat" data-d="1">Next beat →</button>` : `<button class="btn hal lg" data-act="finish">Finish lesson ✓</button>`}</div></div>`;
+}
+
+function reportView() {
+  const r = ST.report;
+  return `<div class="card"><div class="ct"><h2>Class report · Class 2-B</h2><span class="row">${chip.sch()}${chip.demo()}</span></div>
+    <div class="grid g3">${kpi(`${r.beats}/7`, 'Beats completed')}${kpi(`${r.tokens}/7`, 'Token moments done')}${kpi(r.vote === 'no' ? 'Stay' : r.vote === 'yes' ? 'Go' : '—', 'Class vote result')}</div>
+    <div class="grid g2" style="margin-top:16px">
+      <div><b>Whole-class participation (your estimate)</b><div class="row" style="margin-top:8px">${['Most of the class', 'About half', 'A few children'].map(p => `<button class="btn" data-act="part" data-v="${p}" aria-pressed="${ST.part === p}">${p}</button>`).join('')}</div><p class="hi">One estimate for the class. Folkshala does not track individual children.</p></div>
+      <div><b>How did it go?</b><div class="row" role="radiogroup" aria-label="Rating 1 to 5" style="margin-top:8px">${[1, 2, 3, 4, 5].map(i => `<button class="btn star" role="radio" aria-checked="${ST.rating === i}" data-act="rate" data-v="${i}" aria-label="${i} of 5">${ST.rating >= i ? '★' : '☆'}</button>`).join('')}</div></div></div>
+    <div class="row sp" style="margin-top:18px"><button class="btn" data-act="reteach">↻ Teach again</button><button class="btn red lg" data-act="saveReport" ${ST.part && ST.rating ? '' : 'disabled'}>● Save report</button></div></div>`;
+}
+
+VIEWS.teacher = () => `<div class="page">
+  ${head('01', 'LESSON STUDIO', 'Make today\'s story', 'ready for every child', `Didi teaches Class 2-B at ${SCHOOL}. Describe the class, pick a story, let the AI draft it, then approve it before anything reaches the children.`, art('namaste', 'var(--haldi)'))}
+  <div class="studio ${ST.step >= 4 ? 'wide' : ''}">
+    <div>${stepper()}<div id="stepbody">${[step1, step2, step3, step4, step5][ST.step - 1]()}</div></div>
+    <aside class="grid" style="gap:14px;align-content:start">
+      <div class="card freecard"><div class="lab">Free tier</div><div class="big">${ST.free}</div><div style="font-weight:600">free lessons left this month</div><p style="margin:6px 0 0;font-size:14px">A school licence unlocks unlimited lessons. ${chip.as()}</p></div>
+      <div class="card"><div class="ct"><h3>My lessons</h3>${chip.hu()}</div>${ST.lessons.map(l => `<div class="mini"><b>${l.t}</b><span class="hi">${l.s} · ${l.d}</span></div>`).join('')}</div>
+    </aside></div></div>`;
+
+// ---- studio actions ----
+const rerender = () => render();
+ACTIONS.goStep = el => { const n = +el.dataset.n; if (n === 3 && !ST.drafted && !ST.drafting) return ACTIONS.draft(); ST.step = n; ST.editing = false; render(); document.getElementById('stepbody')?.scrollIntoView({ block: 'nearest' }); };
+ACTIONS.mode = el => { ST.mode = el.dataset.m; render(); };
+ACTIONS.tick = el => { const k = el.dataset.k; ST.checked[k] = el.checked; if (el.checked && !ST.counts[k]) ST.counts[k] = 1; if (!el.checked) ST.counts[k] = 0; render(); };
+ACTIONS.cnt = el => { const k = el.dataset.k; ST.counts[k] = Math.max(0, Math.min(40, ST.counts[k] + +el.dataset.d)); ST.checked[k] = ST.counts[k] > 0; render(); };
+ACTIONS.size = el => { const v = parseInt(el.value, 10); if (v > 0) ST.size = v; };
+ACTIONS.dev = el => { ST.devices = el.value; };
+ACTIONS.hl = el => { ST.homeLangs = el.value; };
+ACTIONS.sent = el => { ST.sentence = el.value; };
+ACTIONS.example = () => { ST.sentence = "38 kids, one can't see the board well, two are autistic, one is hard of hearing, many speak Bhojpuri at home"; ST.parsed = null; render(); };
+ACTIONS.mic = () => {
+  if (ST.listening) return; ST.listening = true; ST.sentence = ''; render();
+  const words = "38 kids, one can't see the board well, two are autistic, one is hard of hearing, many speak Bhojpuri at home".split(' ');
+  words.forEach((w, i) => later(() => { ST.sentence += (i ? ' ' : '') + w; const t = document.getElementById('sent'); if (t) t.value = ST.sentence; if (i === words.length - 1) { ST.listening = false; render(); toast('Speech captured (simulated in this demo)'); } }, 120 * i));
+};
+ACTIONS.parse = () => { if (!ST.sentence.trim()) { toast('Type or speak a sentence first'); return; } ST.parsed = parseSentence(ST.sentence); render(); };
+ACTIONS.pcnt = el => { const k = el.dataset.k; ST.parsed.needs[k] = Math.max(1, ST.parsed.needs[k] + +el.dataset.d); render(); };
+ACTIONS.pdel = el => { delete ST.parsed.needs[el.dataset.k]; render(); };
+ACTIONS.confirmParse = () => {
+  NEEDS.forEach(n => { const v = ST.parsed.needs[n.k] || 0; ST.counts[n.k] = v; ST.checked[n.k] = v > 0; });
+  if (ST.parsed.size) ST.size = ST.parsed.size;
+  if (ST.parsed.langs.includes('Bhojpuri')) ST.homeLangs = 'Hindi + Bhojpuri';
+  ST.mode = 'tick'; ST.parsed = null; render(); toast('● Confirmed by teacher. You can still change any count.');
+};
+ACTIONS.filt = el => { ST.filt[el.dataset.k] = el.value; render(); };
+ACTIONS.goal = () => {};
+ACTIONS.pick = el => {
+  const s = STORIES.find(x => x.id === el.dataset.id);
+  if (!s.consent) { toast('Consent pending: this story cannot be used until the storyteller agrees and a cultural review is done.'); return; }
+  if (!s.beats.length) { toast('In this demo only "The Monkey and the Crocodile" has a full draft.'); return; }
+  ST.story = s.id; render();
+};
+ACTIONS.draft = () => {
+  if (!ST.story) { toast('Pick a story first'); return; }
+  ST.step = 3; ST.drafting = true; ST.drafted = false; ST.draftStep = 0; render();
+  PIPE.forEach((_, i) => later(() => { ST.draftStep = i + 1; if (i === PIPE.length - 1) { ST.drafting = false; ST.drafted = true; } if (ST.route === 'teacher' && ST.step === 3) render(); }, 750 * (i + 1)));
+};
+ACTIONS.tab = el => { ST.tab = el.dataset.t; render(); };
+ACTIONS.flag = el => {
+  const f = el.dataset.f, v = el.dataset.v; ST.flags[f] = v;
+  if (f === 'violence') { const b = ST.adapt[2]; if (v === 'restore') { b.t = SOURCE_WIFE; b.hi = SOURCE_WIFE_HI; } else { b.t = ADAPT[2].t; b.hi = ADAPT[2].hi; } }
+  if (f === 'fidelity') { const b = ST.adapt[6]; if (v === 'source') { b.t = SOURCE_END; b.hi = SOURCE_END_HI; } else { b.t = ADAPT[6].t; b.hi = ADAPT[6].hi; } }
+  render();
+};
+ACTIONS.edit = () => {
+  if (ST.editing) {
+    document.querySelectorAll('[data-beat]').forEach(d => { const i = +d.dataset.beat, t = d.textContent.trim(); if (t && t !== ST.adapt[i].t) { ST.adapt[i].t = t; ST.adapt[i].chg = true; ST.edits++; } });
+    ST.editing = false; render(); toast(`● Saved. ${ST.edits} edit${ST.edits === 1 ? '' : 's'} so far.`);
+  } else { ST.editing = true; ST.tab = 'Story'; render(); document.querySelector('[data-beat]')?.focus(); }
+};
+ACTIONS.approve = () => {
+  if (ST.free <= 0) { modal(`<h2>Free lessons used up</h2><p>Your 2 free lessons this month are done. A school licence unlocks unlimited lessons for every classroom. ${chip.as()}</p><a class="btn red" href="#school" data-close>See school licence</a>`); return; }
+  if (ST.editing) ACTIONS.edit();
+  const d = new Date(), ts = d.toLocaleString('en-IN', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  const id = 'D-2041';
+  ST.approved = { ts, edits: ST.edits + (ST.flags.violence === 'restore') + (ST.flags.fidelity === 'source'), id };
+  ST.free--; ST.audit.unshift({ id, cls: 'Class 2-B · ' + SCHOOL, ai: 'engine v0.9 · vendor A', who: 'Teacher', dec: 'Approved', ed: ST.approved.edits + ' lines', ts, fresh: true });
+  ST.lessons.unshift({ t: 'The Monkey and the Crocodile', s: 'Approved · cached offline', d: 'Today' });
+  render(); toast('● Approved by teacher. Entry added to the audit log.');
+};
+ACTIONS.reject = () => { ST.rejected = true; render(); ST.audit.unshift({ id: 'D-2041', cls: 'Class 2-B · ' + SCHOOL, ai: 'engine v0.9 · vendor A', who: 'Teacher', dec: 'Rejected', ed: '—', ts: 'Today' }); };
+ACTIONS.redraft = el => { ST.rejected = false; ST.adapt = ADAPT.map(b => ({ ...b })); ST.flags = { violence: null, fidelity: null }; ST.edits = 0; toast(`Reason sent to the AI: "${el.dataset.r}"`); ACTIONS.draft(); };
+let speakT;
+ACTIONS.play = () => {
+  ST.playing = !ST.playing;
+  try { if (!ST.playing) speechSynthesis.cancel(); else { const u = new SpeechSynthesisUtterance(ST.adapt[ST.beat].hi); u.lang = 'hi-IN'; u.rate = .9; speechSynthesis.speak(u); } } catch (e) { }
+  clearInterval(speakT);
+  if (ST.playing) { ST.capIdx = 0; speakT = setInterval(() => { ST.capIdx++; if (ST.capIdx > 3) { ST.playing = false; clearInterval(speakT); } if (ST.route === 'teacher') render(); }, 2200); }
+  render();
+};
+ACTIONS.placed = () => { ST.placed[ST.beat] = true; render(); toast('◆ Token read by the kit'); };
+ACTIONS.vote = el => { ST.vote = el.dataset.v; render(); };
+ACTIONS.beat = el => { ST.beat = Math.max(0, Math.min(ST.adapt.length - 1, ST.beat + +el.dataset.d)); ST.playing = false; ST.capIdx = 0; clearInterval(speakT); try { speechSynthesis.cancel(); } catch (e) { } render(); };
+ACTIONS.finish = () => { ST.playing = false; clearInterval(speakT); ST.report = { beats: ST.adapt.length, tokens: Object.keys(ST.placed).length, vote: ST.vote }; render(); };
+ACTIONS.part = el => { ST.part = el.dataset.v; render(); };
+ACTIONS.rate = el => { ST.rating = +el.dataset.v; render(); };
+ACTIONS.reteach = () => { ST.report = null; ST.beat = 0; ST.placed = {}; ST.vote = null; render(); };
+ACTIONS.saveReport = () => { ST.lessons[0].s = `Taught · ${ST.part.toLowerCase()} joined · ${ST.rating}/5`; ST.taught = true; toast('● Class report saved. No child names, just the class.'); ST.report = null; ST.beat = 0; ST.placed = {}; ST.vote = null; ST.part = ''; ST.rating = 0; ST.step = 1; render(); window.scrollTo(0, 0); };
+
+ACTIONS.fs = () => { const el = document.getElementById('stage'); try { (el.requestFullscreen || el.webkitRequestFullscreen).call(el); } catch (e) { toast('Full screen is not available here'); } };
+
+// ---------- 4.2 special educator ----------
+const EDITS_BY_NEED = [['Autism', 31, 'roles made more predictable'], ['Low vision', 22, 'bigger tactile cues'], ['Hard of hearing', 19, 'more picture cues'], ['Reading difficulty', 15, 'shorter sentences'], ['Home language', 13, 'glossary words fixed']];
+function oneToSix() {
+  const cx = [70, 150, 230, 310, 390, 470];
+  return S(540, 190, `${cx.map((x, i) => `<path d="M270 60 L${x} 140" stroke="${C.muted}" stroke-width="1.5" stroke-dasharray="4 5"/>`).join('')}
+    <circle cx="270" cy="48" r="34" fill="${C.sindoor}"/><text x="270" y="56" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="24" fill="#fff">1</text>
+    ${cx.map((x, i) => `<rect x="${x - 30}" y="132" width="60" height="44" rx="10" fill="${i < 3 ? '#F8E7E3' : '#F1ECE3'}"/><text x="${x}" y="152" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="12" fill="${C.ink}">${QUEUE[i].cls.replace('Class ', '')}</text><text x="${x}" y="168" text-anchor="middle" font-family="Schibsted Grotesk" font-size="11" fill="${C.muted}">${QUEUE[i].sch}</text>`).join('')}`, 'One special educator connected to six classrooms across two schools');
+}
+VIEWS.educator = () => {
+  const q = QUEUE.find(x => x.id === ST.q), sent = ST.qsent[q.id], monkey = q.story.startsWith('The Monkey');
+  return `<div class="page">
+  ${head('02', 'REVIEW QUEUE', 'Six classrooms,', 'one special educator', 'Drafts that touch disability supports can be routed to the school\'s special educator before the teacher teaches them. She reviews, edits or sends them back with a note.', art('drum', 'var(--gulabi)'))}
+  <div class="grid g4">${kpi(QUEUE.length, 'Drafts waiting', chip.demo())}${kpi('9 min', 'Median review time', chip.demo())}${kpi('18%', 'Edit rate on AI drafts', chip.demo(), 'var(--neel)')}${kpi(Object.keys(ST.qsent).length + 2, 'Sent back this week', chip.demo(), 'var(--sindoor)')}</div>
+  <div class="grid" style="grid-template-columns:minmax(0,1.8fr) minmax(0,1fr);margin-top:18px;align-items:start">
+    <div class="card"><div class="ct"><h2>Queue</h2>${chip.hu('● SPECIAL EDUCATOR')}</div><div class="scroll"><table><thead><tr><th>Draft</th><th>Class</th><th>Needs</th><th class="n">Flags</th><th>Waiting</th><th></th></tr></thead><tbody>
+      ${QUEUE.map(x => `<tr ${x.id === ST.q ? 'class="sel"' : ''}><td><b>${x.id}</b><br><span class="hi">${x.story}</span></td><td style="white-space:nowrap">${x.cls}<br><span class="hi">${x.sch}</span></td><td>${x.needs.map(n => `<span class="pill">${needName(n)}</span>`).join('')}</td><td class="n">${x.flags ? '⚑ ' + x.flags : '0'}</td><td>${ST.qsent[x.id] ? '<b style="color:var(--sindoor)">Sent back</b>' : x.wait}</td><td><button class="btn" data-act="qsel" data-id="${x.id}" aria-pressed="${x.id === ST.q}">Open</button></td></tr>`).join('')}
+    </tbody></table></div></div>
+    <div class="card" style="text-align:center"><div class="lab">Reach</div><h2 style="margin:6px 0 8px">1 special educator → 6 classrooms supported</h2><div class="fig">${oneToSix()}</div><p class="hi">Today one educator cannot visit six rooms every week. Reviewing drafts lets her shape every lesson. ${chip.tg()}</p></div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="ct"><h2>${q.id} · ${q.cls} · ${q.story}</h2><span class="row">${chip.ai('▲ AI DRAFT')}${sent ? chip.hu('● SENT BACK') : ''}</span></div>
+    ${monkey ? diffView(false) : `<ul class="never" style="margin:0">${['Sentences shortened for the class reading level', ...q.needs.map(n => ({ vision: 'Tactile token prompts added', hearing: 'Captions and picture cue cards added', autism: 'Predictable repeated role added; quiet cue before loud moments', attention: 'Movement break added after beat 3', reading: 'Key words repeated with pictures', speech: 'Gesture option for spoken lines', motor: 'Token placement moved to the table edge', lang: 'Home-language glossary added' }[n]))].map(t => `<li><b>▲</b> ${t}</li>`).join('')}</ul><p class="hi">The beat-by-beat diff is shown for Monkey and Crocodile drafts in this demo.</p>`}
+    <div class="grid g2" style="margin-top:14px;align-items:end"><div class="field"><label for="qn">Note to the teacher</label><textarea id="qn" rows="2" data-in="qnote" placeholder="e.g. Give the river group a visual timer; the reveal in beat 5 may be too loud.">${esc(ST.qnote)}</textarea></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn red" data-act="qapprove">● Approve for class</button><button class="btn" data-act="qsend">↩ Send back to teacher with note</button></div></div></div>
+  <div class="card" style="margin-top:18px"><div class="ct"><h2>Common edits by need type</h2>${chip.demo()}</div><p class="hi" style="margin-top:-4px">Share of special-educator edits, last 30 days. Each edit teaches the next draft.</p>
+    ${EDITS_BY_NEED.map(([n, v, w]) => hbar(`${n}`, v, 35, 'var(--sindoor)', v + '%') + `<div class="hi" style="margin:-6px 0 8px 182px">${w}</div>`).join('')}</div></div>`;
+};
+ACTIONS.qsel = el => { ST.q = el.dataset.id; ST.qnote = ''; render(); };
+ACTIONS.qnote = el => { ST.qnote = el.value; };
+ACTIONS.qsend = () => {
+  if (!ST.qnote.trim()) { toast('Add a short note so the teacher knows what to change'); document.getElementById('qn')?.focus(); return; }
+  const q = QUEUE.find(x => x.id === ST.q); ST.qsent[q.id] = ST.qnote; ST.audit.unshift({ id: q.id, cls: `${q.cls} · ${q.sch}`, ai: 'engine v0.9 · vendor A', who: 'Special educator', dec: 'Sent back', ed: 'note added', ts: 'Today', fresh: true });
+  ST.qnote = ''; render(); toast('↩ Sent back to the class teacher with your note');
+};
+ACTIONS.qapprove = () => { const q = QUEUE.find(x => x.id === ST.q); ST.audit.unshift({ id: q.id, cls: `${q.cls} · ${q.sch}`, ai: 'engine v0.9 · vendor A', who: 'Special educator', dec: 'Approved', ed: '0 lines', ts: 'Today', fresh: true }); toast(`● ${q.id} approved. Logged in the audit trail.`); render(); };
+
+// ---------- 4.3 school ----------
+const CLASSES = [['Class 1-A', 9, 8, '12%', 'OK', 'Mon'], ['Class 1-C', 6, 5, '22%', 'OK', 'Fri'], ['Class 2-A', 11, 10, '15%', 'Refill due', 'Tue'], ['Class 2-B', 8, 7, '18%', 'OK', 'Today'], ['Class 3-A', 10, 9, '9%', 'OK', 'Mon'], ['Class 3-C', 4, 3, '25%', 'Refill due', 'Thu'], ['Class 4-B', 7, 5, '27%', 'Refill due', 'Wed']];
+const TIERS = [['small', 'Starter', '₹6,000', 'up to 4 classrooms'], ['mid', 'School', '₹15,000', 'up to 15 classrooms + educator queue'], ['big', 'Campus', '₹40,000', 'unlimited classrooms, 2 schools, reports for funders']];
+VIEWS.school = () => `<div class="page">
+  ${head('03', 'SCHOOL DASHBOARD', `${SCHOOL}`, 'this term at a glance', 'Head teachers see lessons, approvals and kit health by classroom. Never by child.', art('mahabali', 'var(--t-kit)'))}
+  <div class="grid g4">${kpi('12 min', 'Average lesson prep time', chip.tg() + '<span class="hi">under 15 min</span>' + chip.demo(), 'var(--neel)')}${kpi('84%', 'Drafts approved by teachers', chip.demo(), 'var(--sindoor)')}${kpi('3', 'Kit refills due', chip.kit() + chip.demo(), 'var(--patta)')}${kpi('24', 'Lessons cached offline', chip.demo())}</div>
+  <div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);margin-top:18px;align-items:start">
+    <div class="card"><div class="ct"><h2>Classrooms</h2><span class="row">${chip.sch()}${chip.demo()}</span></div><div class="scroll"><table><thead><tr><th>Class</th><th class="n">Lessons</th><th class="n">Approved</th><th class="n">Edit rate</th><th>Kit</th><th>Last taught</th></tr></thead><tbody>
+      ${CLASSES.map(c => `<tr><td><b>${c[0]}</b></td><td class="n">${c[1]}</td><td class="n">${c[2]}</td><td class="n">${c[3]}</td><td>${c[4] === 'OK' ? '◆ OK' : '<b style="color:var(--sindoor)">◆ Refill due</b>'}</td><td>${c[5]}</td></tr>`).join('')}</tbody></table></div>
+      <div class="row" style="margin-top:12px"><button class="btn ink" data-act="pdf">↓ Download one-page class report (PDF)</button></div></div>
+    <div class="grid" style="gap:16px">
+      <div class="card"><div class="ct"><h2>School licence</h2>${chip.as()}</div><p class="hi" style="margin-top:-4px">Per school, per year. Teachers always use it free.</p>
+        <div class="grid" style="gap:8px">${TIERS.map(([k, n, p, d]) => `<button class="tier" data-act="tier" data-k="${k}" aria-pressed="${ST.tier === k}"><span class="big" style="font-size:28px">${p}</span><span><b>${n}</b><br><span class="hi">${d}</span></span></button>`).join('')}</div></div>
+      <div class="card"><div class="ct"><h2>Compliance</h2>${chip.sch()}</div>
+        <div class="row" style="align-items:flex-end;gap:14px"><span class="big" style="font-size:64px;color:var(--patta)">0</span><b style="padding-bottom:10px">child names stored.<br>There is no field for them.</b></div>
+        <ul class="never ok"><li><b>✓</b> Class-level needs only; no per-child records</li><li><b>✓</b> DPDP Act 2023-aware design: consent through the school, minimal data, delete on request</li><li><b>✓</b> Every lesson has a human approval in the audit log</li></ul><p class="hi">Design intent for the concept, not a legal certification.</p></div>
+    </div></div>
+</div>`;
+ACTIONS.tier = el => { ST.tier = el.dataset.k; render(); };
+ACTIONS.pdf = () => { modal(`<div class="row sp"><h2>Class report · Class 2-B</h2>${chip.demo()}</div><p class="hi">One page, class level only. Downloads are switched off in this demo, so this is a preview.</p>
+  <table><tbody><tr><th>School</th><td>${SCHOOL}</td></tr><tr><th>Lessons this term</th><td>8 taught, 7 approved first time</td></tr><tr><th>Stories</th><td>The Monkey and the Crocodile; The Thirsty Crow; The Clever Hare and the Lion</td></tr><tr><th>Supports used</th><td>Tactile tokens, captions, picture cues, Bhojpuri glossary</td></tr><tr><th>Participation</th><td>Teacher estimate: most of the class</td></tr><tr><th>Child data</th><td>None stored</td></tr></tbody></table>`); toast('Preview only: downloads are off in this demo'); };
+
+// ---------- 4.4 funder ----------
+const NCR = [['South Delhi', 1, 'Pilot'], ['North East Delhi', 0, 'Planned'], ['Gurugram', 0, 'Planned'], ['Faridabad', 0, 'Planned'], ['Gautam Buddh Nagar (Noida)', 0, 'Planned'], ['Ghaziabad', 0, 'Planned']];
+const FUNNEL = [['Teachers onboarded', 120], ['Lessons drafted by AI', 940], ['Approved by a teacher', 790], ['Taught in class', 702], ['Class report saved', 610]];
+VIEWS.funder = () => `<div class="page">
+  ${head('04', 'IMPACT', 'What a CSR rupee', 'buys in a classroom', 'For CSR teams and foundations. Everything here is a plan or illustrative demo data until the pilot reports.', art('anna', 'var(--t-hal)', true))}
+  <div class="grid g4">
+    ${stampCard('₹12,000', 'per classroom, per year (CSR)', chip.as(), 'var(--ink)')}
+    ${stampCard('~200', 'classrooms funded in Year 1', chip.tg(), 'var(--patta)')}
+    ${stampCard('~7,600', 'children in those classrooms (38 per class)', chip.tg(), 'var(--patta)')}
+    ${stampCard('0', 'lessons taught without teacher approval', chip.hu('● RULE'), 'var(--sindoor)')}
+  </div>
+  <div class="grid g2" style="margin-top:20px;align-items:start">
+    <div class="card"><div class="ct"><h2>Delhi NCR rollout</h2><span class="row">${chip.tg()}${chip.demo()}</span></div>
+      ${NCR.map(([d, n, s]) => `<div class="drow"><span class="pin ${s === 'Pilot' ? 'on' : ''}" aria-hidden="true"></span><b>${d}</b><span class="chip ${s === 'Pilot' ? 'c-kit' : 'c-mut'}">${s === 'Pilot' ? '◆ Pilot · ' + SCHOOL : 'Planned'}</span></div>`).join('')}
+      <p class="hi">District order is a planning assumption, not a commitment from any district office.</p></div>
+    <div class="card"><div class="ct"><h2>Lesson funnel</h2>${chip.demo()}</div>${FUNNEL.map(([l, v], i) => hbar(l, v, 940, ['var(--sindoor)', 'var(--neel)', 'var(--sindoor)', 'var(--patta)', 'var(--ink)'][i], v.toLocaleString('en-IN'))).join('')}
+      <p class="hi">Read as: of 940 AI drafts, 790 were approved by a teacher and 702 were taught. Bars are labelled, so colour is not needed to read them.</p></div>
+  </div>
+  <div class="card" style="margin-top:20px"><div class="ct"><h2>Impact report preview</h2><span class="row">${chip.demo()}<button class="btn ink" data-act="csr">↓ Export for CSR filing</button></span></div>
+    <div class="grid g3"><div><div class="lab">Reach</div><p style="margin:4px 0">Classrooms, schools and districts covered; teacher count. ${chip.tg()}</p></div><div><div class="lab">Inclusion</div><p style="margin:4px 0">Need types supported per lesson; languages taught in. Class-level only.</p></div><div><div class="lab">Spend</div><p style="margin:4px 0">₹ per classroom per year against the ₹12,000 plan. ${chip.as()}</p></div></div></div>
+  <div class="notice" style="margin-top:18px;border-color:var(--haldi);background:#fbf0d4;color:var(--ink)"><span aria-hidden="true">◆</span><span>TARGET figures are plans, not results. Nothing on this page is survey or interview data. ₹12,000 per classroom is a pricing assumption from the team's 5-year plan.</span></div></div>`;
+ACTIONS.csr = () => { modal(`<div class="row sp"><h2>CSR impact summary</h2>${chip.demo()}</div><p class="hi">Format preview only. Downloads are off in this demo, and real filings need audited figures.</p><table><tbody><tr><th>Programme</th><td>Folkshala inclusive storytelling, Delhi NCR</td></tr><tr><th>Cost per classroom</th><td>₹12,000 / year (ASSUMPTION)</td></tr><tr><th>Classrooms</th><td>~200 in Year 1 (TARGET)</td></tr><tr><th>Children reached</th><td>~7,600 (TARGET)</td></tr><tr><th>Safeguards</th><td>No child names; teacher approval on every lesson</td></tr></tbody></table>`); toast('Preview only: exports are off in this demo'); };
+
+// ---------- 4.5 story library ----------
+const REC_STEPS = [['Record', '◆', 'var(--haldi)', 'Dadi tells the story aloud; the phone records it.'], ['AI transcribes', '▲', 'var(--neel)', 'Speech to text in the original language.'], ['Beats tagged', '▲', 'var(--neel)', 'AI marks beginning, middle and end.'], ['Cultural review', '●', 'var(--sindoor)', 'A community reviewer checks meaning and credit.'], ['Added', '◆', 'var(--haldi)', 'Story joins the library with consent and credit.']];
+VIEWS.library = () => {
+  const s = STORIES.find(x => x.id === ST.libSel), consented = STORIES.filter(x => x.consent).length + (ST.recStep >= 5 ? 1 : 0);
+  return `<div class="page">
+  ${head('05', "DADI'S LIBRARY", 'Folk stories, told by', 'the people who keep them', 'Every story comes with the storyteller\'s consent and credit. AI helps transcribe and tag; a person checks it before it is used.', art('hanuman', 'var(--t-hu)', true))}
+  <div class="grid" style="grid-template-columns:minmax(0,1fr) 300px;align-items:start">
+    <div class="grid g3">${STORIES.map(x => storyCard(x, true)).join('')}</div>
+    <aside class="grid" style="gap:14px">
+      <div class="card freecard"><div class="lab">Content moat</div><div class="big" style="font-size:52px">${consented}</div><b>stories with consent</b><p style="margin:6px 0 0;font-size:14px">${STORIES.length + (ST.recStep >= 5 ? 1 : 0)} in the library. Each one is a licence we hold and others do not. ${chip.demo()}</p></div>
+      <div class="card" style="padding:0;overflow:hidden;background:var(--sindoor)"><img src="img/puppets.webp" alt="" style="display:block;width:100%"></div></aside></div>
+  <div class="card" style="margin-top:20px"><div class="ct"><h2>${s.title} <span class="hi" lang="hi">${s.hi}</span></h2><span class="row">${chip.con()}${s.consent ? chip.kit('✓ CONSENT') : chip.hu('● CONSENT PENDING')}</span></div>
+    <div class="grid g3"><div><div class="lab">Credit</div><p style="margin:4px 0">${s.credit}</p><div class="lab">Moral</div><p style="margin:4px 0">${s.moral}</p></div>
+      <div><div class="lab">Beats</div><p style="margin:4px 0">${s.beats.length ? `${s.beats.length} beats: ${s.beats.filter(b => b.p === 'Beginning').length} beginning, ${s.beats.filter(b => b.p === 'Middle').length} middle, ${s.beats.filter(b => b.p === 'End').length} end` : 'Not tagged yet in this demo'}</p><div class="lab">Cultural notes</div><p style="margin:4px 0">${s.id === 'monkey' ? '[Cultural reviewer notes go here, e.g. local names for the fruit and river.]' : 'Reviewer notes are added at cultural review.'} ${chip.demo()}</p></div>
+      <div><div class="lab">Elder recording</div><div class="row" style="margin-top:6px"><button class="btn hal" data-act="libplay" ${s.consent ? '' : 'disabled'} aria-pressed="${ST.libPlay}">${ST.libPlay ? '❚❚ Pause' : '▶ Play recording'}</button><div class="wave ${ST.libPlay ? 'on' : ''}" aria-hidden="true">${Array.from({ length: 16 }, (_, i) => `<i style="animation-delay:${(i % 5) * .1}s;background:var(--ink)"></i>`).join('')}</div></div>
+        <div class="caption" style="margin-top:8px;font-size:15px" aria-live="polite">${ST.libPlay ? (s.beats[ST.libCap % Math.max(1, s.beats.length)]?.t || 'Recording plays here.') : 'Captions show while the recording plays. (Simulated audio in this demo.)'}</div></div></div></div>
+  <div class="card" style="margin-top:20px"><div class="ct"><h2>Record a story</h2><span class="row">${chip.con()}${chip.ai()}${chip.hu('● REVIEW')}</span></div>
+    <div class="recflow">${REC_STEPS.map(([t, sym, col, d], i) => `<div class="rs ${ST.recStep > i ? 'ok' : ST.recStep === i ? 'now' : ''}"><span class="d" style="background:${ST.recStep > i ? col : 'var(--card)'};color:${ST.recStep > i && col !== 'var(--haldi)' ? 'var(--cream)' : 'var(--ink)'}"><span>${ST.recStep > i ? '✓' : sym}</span></span><b>${t}</b><span class="hi">${d}</span></div>`).join('')}</div>
+    <div class="row sp" style="margin-top:14px"><span class="hi">${ST.recStep >= 5 ? '◆ "The Weaver Bird\'s Nest" added with consent and credit: Dadi [name], [village].' : `Step ${ST.recStep + 1} of 5`}</span>
+      ${ST.recStep < 5 ? `<button class="btn ${['hal', 'ind', 'ind', 'red', 'hal'][ST.recStep]}" data-act="recnext">${['◆ Start recording', '▲ Transcribe', '▲ Tag beats', '● Approve cultural review', '◆ Add to library'][ST.recStep]}</button>` : `<button class="btn" data-act="recreset">↻ Record another</button>`}</div></div></div>`;
+};
+ACTIONS.libSel = el => { ST.libSel = el.dataset.id; ST.libPlay = false; render(); };
+let libT;
+ACTIONS.libplay = () => { ST.libPlay = !ST.libPlay; clearInterval(libT); if (ST.libPlay) { ST.libCap = 0; libT = setInterval(() => { ST.libCap++; if (ST.route === 'library') render(); if (ST.libCap > 8) { ST.libPlay = false; clearInterval(libT); render(); } }, 2000); } render(); };
+ACTIONS.recnext = () => { ST.recStep++; if (ST.recStep === 5) { const w = STORIES.find(x => x.id === 'weaver'); w.consent = true; w.credit = 'Dadi [name], [village]'; } render(); toast(['', '◆ Recording saved', '▲ Transcript ready to check', '▲ 6 beats tagged', '● Cultural review approved', ''][ST.recStep] || '◆ Added to the library'); };
+ACTIONS.recreset = () => { ST.recStep = 0; render(); };
+
+// ---------- 4.6 AI core + governance ----------
+const LEARN = [34, 33, 31, 31, 29, 27, 26, 24, 22, 21, 19, 18];
+const FLAGS = [['Reading level too high', 21], ['Violence softened', 12], ['Fidelity: ending or moral changed', 7], ['Possible stereotype', 3]];
+const INCIDENTS = [['INC-004', 'Bhojpuri glossary gave a wrong word for "river"', 'Teacher flagged it at review; glossary fixed and re-checked', 'Closed'], ['INC-003', 'Narration voice mispronounced a character name', 'Added to the voice dictionary', 'Closed']];
+const LEVELS = [['L0', 'AI off', 'Teacher writes the lesson; Folkshala only plays it on the kit.', ''], ['L1', 'AI suggests', 'Ideas and word lists; the teacher writes.', ''], ['L2', 'AI drafts, human approves', 'Full draft, flagged changes, nothing plays until approved.', 'def'], ['L3', 'Re-use approved lessons', 'Re-teach a lesson already approved for this class without a new review. School opt-in.', '']];
+const STACK = [['Foundation models', 'Rent', 'Large language and speech models from vendors, behind our gateway.'], ['Model gateway', 'Build', 'Routing, fallback, cost caps, and the local model for offline use.'], ['Inclusion agents + evals', 'Build', 'Need-type adaptation, risk flags, need × language eval set.'], ['Story library + consent', 'Build', 'Recorded folk stories with consent, credit and cultural review.'], ['Kit hardware', 'Buy + assemble', 'Generic NFC tokens and printed mats from local suppliers.']];
+
+function lineChart() {
+  const W = 560, H = 230, l = 44, r = 20, t = 20, b = 36, x = i => l + i * (W - l - r) / 11, y = v => t + (40 - v) / 40 * (H - t - b);
+  const pts = LEARN.map((v, i) => `${x(i)},${y(v)}`).join(' ');
+  return S(W, H, `${[0, 10, 20, 30, 40].map(v => `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="${C.ink}" stroke-opacity=".15"/><text x="${l - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" font-family="Schibsted Grotesk" fill="${C.muted}">${v}%</text>`).join('')}
+    ${LEARN.map((_, i) => i % 2 === 0 || i === 11 ? `<text x="${x(i)}" y="${H - 14}" text-anchor="middle" font-size="11" font-family="Schibsted Grotesk" fill="${C.muted}">W${i + 1}</text>` : '').join('')}
+    <line x1="${l}" x2="${W - r}" y1="${y(20)}" y2="${y(20)}" stroke="${C.ink}" stroke-dasharray="6 5" stroke-width="1.5"/><text x="${W - r}" y="${y(20) - 6}" text-anchor="end" font-size="11" font-family="Schibsted Grotesk" font-weight="700" fill="${C.ink}">TARGET 20%</text>
+    <polyline points="${pts}" fill="none" stroke="${C.neel}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    ${LEARN.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="#fff" stroke="${C.neel}" stroke-width="2.5"><title>Week ${i + 1}: ${v}% of drafts edited</title></circle>`).join('')}
+    <text x="${x(0) + 8}" y="${y(34) - 10}" font-size="13" font-family="Schibsted Grotesk" font-weight="700" fill="${C.neel}">34%</text><text x="${x(11)}" y="${y(18) + 22}" text-anchor="end" font-size="13" font-family="Schibsted Grotesk" font-weight="700" fill="${C.neel}">18%</text>`, 'Line chart: share of AI drafts that teachers edit, falling from 34% in week 1 to 18% in week 12, below the 20% target line');
+}
+function heatmap() {
+  const mean = c => EVAL.reduce((a, r) => a + r[c], 0) / EVAL.length, base = mean(0);
+  const ratio = LANGS.map((_, c) => mean(c) / base), ok = ratio.map(v => v >= .8);
+  const shade = v => `rgba(38,51,140,${Math.max(.08, (v - 2.5) / 2.3).toFixed(2)})`;
+  return `<div class="scroll"><table class="heat"><thead><tr><th>Need type</th>${LANGS.map((l, c) => `<th class="n">${l}${ok[c] ? '' : '<br><span class="nl">not launched</span>'}</th>`).join('')}</tr></thead><tbody>
+    ${NEEDS.map((n, r) => `<tr><th scope="row">${n.en}</th>${EVAL[r].map((v, c) => `<td class="n ${ok[c] ? '' : 'off'}" style="${ok[c] ? `background:${shade(v)};color:${(v - 2.5) / 2.3 > .45 ? C.cream : C.ink}` : ''}">${v.toFixed(1)}</td>`).join('')}</tr>`).join('')}
+    <tr class="ratio"><th scope="row">vs Hindi (4/5ths rule)</th>${ratio.map((v, c) => `<td class="n"><b>${Math.round(v * 100)}%</b> ${ok[c] ? '✓' : '✕'}</td>`).join('')}</tr></tbody></table></div>`;
+}
+VIEWS.ai = () => `<div class="page">
+  ${head('06', 'AI CORE + GOVERNANCE', 'The AI works under', 'rules it cannot skip', 'Which models draft the lessons, how they are tested in each language, and the audit trail that proves a human approved every lesson.', art('puppets', 'var(--t-ai)'))}
+  <div class="grid g2" style="align-items:start">
+    <div class="card"><div class="ct"><h2>Model gateway</h2>${chip.ai('▲ AI')}</div>
+      ${[['a', 'Primary', '[Cloud model vendor A]', 'Drafts and adapts lessons'], ['b', 'Second', '[Cloud model vendor B]', 'Takes over if Primary fails or is slow'], ['local', 'Local', 'Small on-device model', 'Offline narration and glossary']].map(([k, n, v, d]) => `<div class="gw"><div><b>${n}</b> · ${v}<br><span class="hi">${d}</span></div><label class="sw"><input type="checkbox" data-ch="vendor" data-k="${k}" ${ST.vendor[k] ? 'checked' : ''}><span>${k === 'a' ? 'On' : 'Fallback'}</span></label></div>`).join('')}
+      <div class="row sp" style="margin-top:10px"><span><span class="big" style="font-size:30px">≈₹5</span> per lesson in model costs</span>${chip.as()}</div>
+      <p class="hi" style="margin:6px 0 0">${!ST.vendor.a && !ST.vendor.b ? 'Both cloud models off: only approved, cached lessons can be taught. New drafts wait.' : !ST.vendor.a ? 'Primary off: drafts route to the second vendor.' : 'Routing: Primary first, Second on failure, Local when offline.'}</p></div>
+    <div class="card"><div class="ct"><h2>Autonomy levels</h2>${chip.hu('● SCHOOL CHOOSES')}</div><div class="ladder">
+      ${LEVELS.map(([lv, n, d, cls]) => `<div class="${cls}"><span class="lv">${lv}</span><div><b>${n}</b><br><span class="hi">${d}</span></div>${cls ? '<span class="chip c-ai">DEFAULT</span>' : '<span></span>'}</div>`).join('')}
+      <div class="no"><span class="lv">✕</span><div><b>AI talks to children</b><br><span class="hi">No chat, no voice assistant, no child-facing AI screen.</span></div><span class="chip c-hu">NOT OFFERED</span></div></div></div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="ct"><h2>Eval heatmap: need type × language</h2><span class="row">${chip.demo()}</span></div>
+    <p class="hi" style="margin-top:-4px">Draft quality scored 1–5 by special educators. A language launches only if its average is at least 80% of Hindi's (the 4/5ths rule). Every cell shows its number, so colour is not needed.</p>${heatmap()}</div>
+  <div class="grid g2" style="margin-top:18px;align-items:start">
+    <div class="card"><div class="ct"><h2>Learning loop</h2>${chip.demo()}</div><p class="hi" style="margin-top:-4px">Share of AI drafts that teachers edit, over 12 weeks. Falling means drafts need fewer fixes.</p><div class="fig">${lineChart()}</div></div>
+    <div class="card"><div class="ct"><h2>Safety flags</h2>${chip.demo()}</div>${FLAGS.map(([f, v]) => hbar(f, v, 22, 'var(--neel)', v)).join('')}<p class="hi">Flags raised on drafts this month. Every flag needs a human choice.</p>
+      <h3 style="margin-top:14px">Incident log</h3><table><tbody>${INCIDENTS.map(i => `<tr><td><b>${i[0]}</b></td><td>${i[1]}<br><span class="hi">${i[2]}</span></td><td>${i[3]}</td></tr>`).join('')}</tbody></table></div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="ct"><h2>Audit log <span class="bar" style="font-size:.8em">Cannot be bypassed</span></h2><span class="row">${chip.hu()}${chip.demo()}</span></div>
+    <p class="hi" style="margin-top:-4px">Every lesson that reaches a class has a row here. There is no route from a draft to the kit that skips it.</p>
+    <div class="scroll"><table><thead><tr><th>Draft</th><th>Class</th><th>AI engine</th><th>Human</th><th>Decision</th><th>Edits</th><th>Time</th></tr></thead><tbody>
+      ${ST.audit.map(a => `<tr ${a.fresh ? 'class="sel"' : ''}><td><b>${a.id}</b></td><td>${a.cls}</td><td>▲ ${a.ai}</td><td>● ${a.who}</td><td><b>${a.dec}</b></td><td>${a.ed}</td><td>${a.ts}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="card" style="margin-top:18px"><div class="ct"><h2>Build vs rent: 5 layers</h2>${chip.as()}</div>
+    <div class="stack">${STACK.map(([n, br, d], i) => `<div><span><b>${5 - i}. ${n}</b></span><span><span class="pill ${br === 'Build' ? '' : 'rent'}">${br}</span> ${d}</span></div>`).join('')}</div>
+    <p class="hi">Solid border = we build it. Dashed = we rent or buy it.</p></div></div>`;
+ACTIONS.vendor = el => { ST.vendor[el.dataset.k] = el.checked; render(); };
+
+// ---------- 4.7 business ----------
+function revChart() {
+  const W = 620, H = 300, l = 50, r = 20, t = 24, b = 40, max = 25, bw = 70, gap = (W - l - r) / 5, y = v => t + (max - v) / max * (H - t - b), tot = REV.years.map((_, i) => +(REV.csr[i] + REV.schools[i] + REV.platform[i]).toFixed(2));
+  const seg = (i, v0, v, fill, pat) => v ? `<rect x="${l + gap * i + (gap - bw) / 2}" y="${y(v0 + v)}" width="${bw}" height="${y(v0) - y(v0 + v)}" fill="${pat ? 'url(#hatch)' : fill}" stroke="#fff" stroke-width="1.5" rx="3"/>` : '';
+  return S(W, H, `<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="${C.card}"/><line x1="0" y1="0" x2="0" y2="8" stroke="${C.ink}" stroke-width="3"/></pattern></defs>
+    ${[0, 5, 10, 15, 20, 25].map(v => `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="${C.ink}" stroke-opacity=".12"/><text x="${l - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" font-family="Schibsted Grotesk" fill="${C.muted}">₹${v} cr</text>`).join('')}
+    ${REV.years.map((yr, i) => seg(i, 0, REV.csr[i], C.haldi) + seg(i, REV.csr[i], REV.schools[i], C.ink) + seg(i, REV.csr[i] + REV.schools[i], REV.platform[i], '', 1)
+      + `<text x="${l + gap * i + gap / 2}" y="${y(tot[i]) - 8}" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="16" fill="${C.ink}">₹${tot[i]} cr</text><text x="${l + gap * i + gap / 2}" y="${H - 16}" text-anchor="middle" font-size="12" font-family="Schibsted Grotesk" font-weight="700" fill="${C.ink}">${yr}</text>`).join('')}
+    <line x1="${l}" x2="${W - r}" y1="${y(6.4)}" y2="${y(6.4)}" stroke="${C.sindoor}" stroke-width="2.5" stroke-dasharray="8 5"/><text x="${l + 6}" y="${y(6.4) - 6}" font-size="12" font-family="Schibsted Grotesk" font-weight="700" fill="${C.sindoor}">Break-even ≈ ₹6.4 cr (around Year 3)</text>`,
+    'Stacked bar chart of planned revenue: Year 1 ₹0.42 crore, Year 2 ₹1.8 crore, Year 3 ₹6.3 crore, Year 4 ₹13 crore, Year 5 ₹23 crore; CSR and government is the largest part, then schools, then platform from Year 4. Break-even around ₹6.4 crore in Year 3.');
+}
+function tamChart() {
+  return S(420, 300, `<circle cx="210" cy="150" r="140" fill="#FCEFD2"/><circle cx="210" cy="196" r="88" fill="${C.haldi}"/><circle cx="210" cy="246" r="38" fill="${C.ink}"/>
+    <text x="210" y="48" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="20" fill="${C.ink}">TAM ₹2,400 cr</text><text x="210" y="64" text-anchor="middle" font-family="Schibsted Grotesk" font-size="12" fill="${C.ink}">primary classrooms in India</text>
+    <text x="210" y="140" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="18" fill="${C.ink}">SAM ₹360 cr</text><text x="210" y="158" text-anchor="middle" font-family="Schibsted Grotesk" font-size="12" fill="${C.ink}">Hindi belt + CSR reach</text>
+    <text x="210" y="244" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="15" fill="${C.cream}">SOM</text><text x="210" y="260" text-anchor="middle" font-family="Schibsted Grotesk" font-weight="700" font-size="15" fill="${C.cream}">₹23 cr</text>`, 'Nested circles: total market ₹2,400 crore, serviceable market ₹360 crore, obtainable market ₹23 crore by Year 5');
+}
+const LTV = [['CSR funder', 17000, 1000, '17×'], ['Private school', 58800, 20000, '2.9×']];
+VIEWS.business = () => `<div class="page">
+  ${head('07', 'BUSINESS MODEL', 'Funders and schools pay,', 'teachers use it free', 'The team\'s 5-year plan. Every number on this page is a planning assumption, not an actual.', art('flowers', 'var(--t-hal)'))}
+  <div class="grid g4">${kpi('₹23 cr', 'Year 5 revenue', chip.as(), 'var(--ink)')}${kpi('Year 3', 'Break-even at ≈ ₹6.4 cr', chip.as(), 'var(--sindoor)')}${kpi('≈71%', 'Gross margin at scale', chip.as(), 'var(--patta)')}${kpi('₹0', 'Price for teachers', chip.hu('● ALWAYS'), 'var(--sindoor)')}</div>
+  <div class="grid" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);margin-top:18px;align-items:start">
+    <div class="card"><div class="ct"><h2>Revenue by stream</h2>${chip.as()}</div><div class="fig">${revChart()}</div>
+      <div class="row legend"><span><i style="background:var(--haldi)"></i>CSR + government</span><span><i style="background:var(--ink)"></i>Schools</span><span><i class="hatch"></i>Platform</span></div></div>
+    <div class="card"><div class="ct"><h2>Market size</h2>${chip.as()}</div><div class="fig" style="max-width:380px;margin:auto">${tamChart()}</div></div></div>
+  <div class="grid g2" style="margin-top:18px;align-items:start">
+    <div class="card"><div class="ct"><h2>LTV vs CAC</h2>${chip.as()}</div>
+      ${LTV.map(([n, l, c, x]) => `<div style="margin-bottom:14px"><div class="row sp"><b>${n}</b><span class="big" style="font-size:30px">${x}</span></div>${hbar('Lifetime value', l, 60000, 'var(--patta)', '₹' + l.toLocaleString('en-IN'))}${hbar('Cost to acquire', c, 60000, 'var(--sindoor)', '₹' + c.toLocaleString('en-IN'))}</div>`).join('')}
+      <p class="hi">CSR deals are cheap to win once one funder renews; private schools need field sales.</p></div>
+    <div class="card"><div class="ct"><h2>Money flow</h2>${chip.as()}</div>
+      <div class="flow">
+        <div class="src">${[['CSR funder', '₹12k / classroom / yr'], ['State programme', '₹4k / classroom / yr'], ['School licence', '₹6k–40k / school / yr'], ['Kit', '₹2.5k once + ₹600 refill']].map(([a, b]) => `<div class="fbox"><b>${a}</b><span>${b}</span></div>`).join('')}</div>
+        <div class="arr" aria-hidden="true">→</div>
+        <div class="fbox mid">${stampLogo(52)}<b>Folkshala</b></div>
+        <div class="arr" aria-hidden="true">→</div>
+        <div class="fbox free"><b>Teachers use it free</b><span>● no paywall on teaching</span></div></div></div></div>
+  <p class="src-line">Source: Folkshala 5-year plan (team model, not actuals). ${chip.as()}</p></div>`;
+
+go();
+})();</script></body></html>
